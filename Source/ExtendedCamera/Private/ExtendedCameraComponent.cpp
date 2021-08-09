@@ -2,15 +2,31 @@
 
 #include "ExtendedCameraComponent.h"
 
-void UExtendedCameraComponent::SetCameraTrackAlpha(float Alpha)
+
+// Set Primary
+void UExtendedCameraComponent::SetPrimaryCameraTrackAlpha(float Alpha)
 {
-    CameraTrackBlendAlpha = Alpha;
+    CameraPrimaryTrackBlendAlpha = Alpha;
 }
 
-float UExtendedCameraComponent::GetCameraTrackAlpha()
+float UExtendedCameraComponent::GetPrimaryCameraTrackAlpha()
 {
-    return CameraTrackBlendAlpha;
+    return CameraPrimaryTrackBlendAlpha;
 }
+
+
+// Set Secondary
+void UExtendedCameraComponent::SetSecondaryCameraTrackAlpha(float Alpha)
+{
+    CameraSecondaryTrackBlendAlpha = Alpha;
+}
+
+float UExtendedCameraComponent::GetSecondaryCameraTrackAlpha()
+{
+    return CameraSecondaryTrackBlendAlpha;
+}
+
+
 
 void UExtendedCameraComponent::SetCameraPrimaryLocationRotation(FVector& InLocation, FRotator& InRotation)
 {
@@ -24,14 +40,14 @@ void UExtendedCameraComponent::SetCameraSecondaryLocationRotation(FVector& InLoc
     SecondaryTrackRotation = InRotation;
 }
 
-void UExtendedCameraComponent::SetUsePrimaryTrack(bool usePrimaryTrack)
-{
-    CameraIsUsingPrimaryTrack = usePrimaryTrack;
-}
-
 bool UExtendedCameraComponent::GetUsePrimaryTrack()
 {
-    return CameraIsUsingPrimaryTrack;
+    return FMath::IsNearlyEqual(CameraPrimaryTrackBlendAlpha, 1.f);
+}
+
+bool UExtendedCameraComponent::GetUseSecondaryTrack()
+{
+    return FMath::IsNearlyEqual(CameraSecondaryTrackBlendAlpha, 1.f);
 }
 
 void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
@@ -39,15 +55,23 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     Super::GetCameraView(DeltaTime, DesiredView);
 
     // Check for the primary track
-    if (CameraIsUsingPrimaryTrack)
+    if (!FMath::IsNearlyZero(CameraPrimaryTrackBlendAlpha))
     {
-        DesiredView.Location = PrimaryTrackLocation;
-        DesiredView.Rotation = PrimaryTrackRotation;
+        if (GetUsePrimaryTrack())
+        {
+            DesiredView.Location = PrimaryTrackLocation;
+            DesiredView.Rotation = PrimaryTrackRotation;
+        }
+        else
+        {
+            DesiredView.Location = FMath::Lerp(DesiredView.Location, PrimaryTrackLocation, CameraPrimaryTrackBlendAlpha);
+            DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, PrimaryTrackRotation, CameraPrimaryTrackBlendAlpha);
+        }
     }
 
 
     // Are we fully blended to the either game or primary track
-    if (FMath::IsNearlyZero(CameraTrackBlendAlpha))
+    if (FMath::IsNearlyZero(CameraSecondaryTrackBlendAlpha))
     {
         // Do nothing when in game track
         // Already set Desired when primary track
@@ -55,7 +79,7 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     }
 
     // Are we fully blended to the secondary track
-    else if (FMath::IsNearlyEqual(CameraTrackBlendAlpha, 1.f))
+    else if (GetUseSecondaryTrack())
     {
         DesiredView.Location = SecondaryTrackLocation;
         DesiredView.Rotation = SecondaryTrackRotation;
@@ -64,7 +88,7 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     // We need to blend!
     else
     {
-        DesiredView.Location = FMath::Lerp(DesiredView.Location, SecondaryTrackLocation, CameraTrackBlendAlpha);
-        DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, SecondaryTrackRotation, CameraTrackBlendAlpha);
+        DesiredView.Location = FMath::Lerp(DesiredView.Location, SecondaryTrackLocation, CameraSecondaryTrackBlendAlpha);
+        DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, SecondaryTrackRotation, CameraSecondaryTrackBlendAlpha);
     }
 }

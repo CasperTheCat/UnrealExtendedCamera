@@ -29,24 +29,29 @@ protected:
 	UPROPERTY(Transient)
 	FRotator SecondaryTrackRotation;
 
-	// This bool switches between Primary and Game track
-	// When on, we blend from Primary to Secondary
-	// When off, we blend from Game to Secondary
+	// Blend Amount for the first channel
 	UPROPERTY(Transient)
-	bool CameraIsUsingPrimaryTrack;
+	float CameraPrimaryTrackBlendAlpha;
 
 	// Blend Amount
 	UPROPERTY(Transient)
-	float CameraTrackBlendAlpha;
+	float CameraSecondaryTrackBlendAlpha;
 
 public:
 	// Set the Blend Amount
 	UFUNCTION(BlueprintCallable)
-	virtual void SetCameraTrackAlpha(float Alpha);
+	virtual void SetPrimaryCameraTrackAlpha(float Alpha);
+
+	// Set the Blend Amount
+	UFUNCTION(BlueprintCallable)
+	virtual void SetSecondaryCameraTrackAlpha(float Alpha);
 
 	// Get the Blend Amount
 	UFUNCTION(BlueprintCallable)
-	virtual float GetCameraTrackAlpha();
+	virtual float GetPrimaryCameraTrackAlpha();
+
+	UFUNCTION(BlueprintCallable)
+	virtual float GetSecondaryCameraTrackAlpha();
 
 	// Set Primary Track
 	UFUNCTION(BlueprintCallable)
@@ -56,12 +61,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetCameraSecondaryLocationRotation(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation);
 
-	// Set
-	UFUNCTION(BlueprintCallable)
-	virtual void SetUsePrimaryTrack(bool usePrimaryTrack);
+	// // Set
+	// UFUNCTION(BlueprintCallable)
+	// virtual void SetUsePrimaryTrack(bool usePrimaryTrack);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetUsePrimaryTrack();
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool GetUseSecondaryTrack();
 
 	// Called by CalcCamera in AActor
 	//virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView);
