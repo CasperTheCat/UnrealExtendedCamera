@@ -26,7 +26,19 @@ float UExtendedCameraComponent::GetSecondaryCameraTrackAlpha()
     return CameraSecondaryTrackBlendAlpha;
 }
 
+void UExtendedCameraComponent::SetCameraPrimaryTrack(FVector& InLocation, FRotator& InRotation, float InFOV)
+{
+    PrimaryTrackLocation = InLocation;
+    PrimaryTrackRotation = InRotation;
+    PrimaryTrackFOV = InFOV;
+}
 
+void UExtendedCameraComponent::SetCameraSecondaryTrack(FVector& InLocation, FRotator& InRotation, float InFOV)
+{
+    SecondaryTrackLocation = InLocation;
+    SecondaryTrackRotation = InRotation;
+    SecondaryTrackFOV = InFOV;
+}
 
 void UExtendedCameraComponent::SetCameraPrimaryLocationRotation(FVector& InLocation, FRotator& InRotation)
 {
@@ -39,6 +51,37 @@ void UExtendedCameraComponent::SetCameraSecondaryLocationRotation(FVector& InLoc
     SecondaryTrackLocation = InLocation;
     SecondaryTrackRotation = InRotation;
 }
+
+void UExtendedCameraComponent::SetCameraPrimaryRotation(FRotator& InRotation)
+{
+    PrimaryTrackRotation = InRotation;
+}
+
+void UExtendedCameraComponent::SetCameraSecondaryRotation(FRotator& InRotation)
+{
+    SecondaryTrackRotation = InRotation;
+}
+
+void UExtendedCameraComponent::SetCameraPrimaryLocation(FVector& InLocation)
+{
+    PrimaryTrackLocation = InLocation;
+}
+
+void UExtendedCameraComponent::SetCameraSecondaryLocation(FVector& InLocation)
+{
+    SecondaryTrackLocation = InLocation;
+}
+
+void UExtendedCameraComponent::SetCameraPrimaryFOV(float InFOV)
+{
+    PrimaryTrackFOV = InFOV;
+}
+
+void UExtendedCameraComponent::SetCameraSecondaryFOV(float InFOV)
+{
+    SecondaryTrackFOV = InFOV;
+}
+
 
 bool UExtendedCameraComponent::GetUsePrimaryTrack()
 {

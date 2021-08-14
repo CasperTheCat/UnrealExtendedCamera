@@ -60,6 +60,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual float GetSecondaryCameraTrackAlpha();
 
+	// Set Primary Track 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraPrimaryTrack(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation, float InFOV);
+
+	// Set Secondary Track
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraSecondaryTrack(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation, float InFOV);
+
 	// Set Primary Track
 	UFUNCTION(BlueprintCallable)
 	virtual void SetCameraPrimaryLocationRotation(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation);
@@ -67,6 +75,30 @@ public:
 	// Set Secondary Track
 	UFUNCTION(BlueprintCallable)
 	virtual void SetCameraSecondaryLocationRotation(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation);
+
+	// Set Primary Track
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraPrimaryRotation(UPARAM(ref) FRotator& InRotation);
+
+	// Set Secondary Track
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraSecondaryRotation(UPARAM(ref) FRotator& InRotation);
+
+	// Set Primary Track
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraPrimaryLocation(UPARAM(ref) FVector& InLocation);
+
+	// Set Secondary Track
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraSecondaryLocation(UPARAM(ref) FVector& InLocation);
+
+	// Set Primary Track 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraPrimaryFOV(float InFOV);
+
+	// Set Secondary Track
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraSecondaryFOV(float InFOV);
 
 	// // Set
 	// UFUNCTION(BlueprintCallable)
