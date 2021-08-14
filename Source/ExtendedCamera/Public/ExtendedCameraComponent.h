@@ -22,12 +22,19 @@ protected:
 	UPROPERTY(Transient)
 	FRotator PrimaryTrackRotation;
 
+	UPROPERTY(Transient)
+	float PrimaryTrackFOV = 0.f;
+
+
 	// Secondary Track - Set by users
 	UPROPERTY(Transient)
 	FVector SecondaryTrackLocation;
 
 	UPROPERTY(Transient)
 	FRotator SecondaryTrackRotation;
+
+	UPROPERTY(Transient)
+	float SecondaryTrackFOV = 0.f;
 
 	// Blend Amount for the first channel
 	UPROPERTY(Transient)

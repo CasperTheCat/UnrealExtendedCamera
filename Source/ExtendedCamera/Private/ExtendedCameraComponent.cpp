@@ -54,6 +54,16 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
 {
     Super::GetCameraView(DeltaTime, DesiredView);
 
+    // Initialise the Offset
+    float OffsetTrackFOV = DesiredView.FOV;
+
+    // Set OffsetTrack for the primary blend if it's non-zero
+    if (!FMath::IsNearlyZero(PrimaryTrackFOV))
+    {
+        OffsetTrackFOV = bUseAdditiveOffset ? (PrimaryTrackFOV + AdditiveFOVOffset) : PrimaryTrackFOV;
+    }
+     
+
     // Check for the primary track
     if (!FMath::IsNearlyZero(CameraPrimaryTrackBlendAlpha))
     {
@@ -61,12 +71,26 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
         {
             DesiredView.Location = PrimaryTrackLocation;
             DesiredView.Rotation = PrimaryTrackRotation;
+            DesiredView.FOV = OffsetTrackFOV;
         }
         else
         {
             DesiredView.Location = FMath::Lerp(DesiredView.Location, PrimaryTrackLocation, CameraPrimaryTrackBlendAlpha);
             DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, PrimaryTrackRotation, CameraPrimaryTrackBlendAlpha);
+            DesiredView.FOV = FMath::Lerp(DesiredView.FOV, OffsetTrackFOV, CameraPrimaryTrackBlendAlpha);
         }
+    }
+
+
+    // Set OffsetTrack for the second if it's non-zero
+    if (!FMath::IsNearlyZero(PrimaryTrackFOV))
+    {
+        OffsetTrackFOV = bUseAdditiveOffset ? (SecondaryTrackFOV + AdditiveFOVOffset) : SecondaryTrackFOV;
+    }
+    else
+    {
+        // Initialise the Offset, again
+        OffsetTrackFOV = DesiredView.FOV;
     }
 
 
@@ -83,6 +107,7 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     {
         DesiredView.Location = SecondaryTrackLocation;
         DesiredView.Rotation = SecondaryTrackRotation;
+        DesiredView.FOV = OffsetTrackFOV;
     }
 
     // We need to blend!
@@ -90,5 +115,6 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     {
         DesiredView.Location = FMath::Lerp(DesiredView.Location, SecondaryTrackLocation, CameraSecondaryTrackBlendAlpha);
         DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, SecondaryTrackRotation, CameraSecondaryTrackBlendAlpha);
+        DesiredView.FOV = FMath::Lerp(DesiredView.FOV, OffsetTrackFOV, CameraPrimaryTrackBlendAlpha);
     }
 }
