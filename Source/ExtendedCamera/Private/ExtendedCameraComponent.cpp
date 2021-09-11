@@ -95,7 +95,14 @@ bool UExtendedCameraComponent::GetUseSecondaryTrack()
 
 void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
 {
+    // Start a counter here so it captures the super call
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetCameraView (Including Super::)"), STAT_ACIGetCameraViewInc, STATGROUP_ACIExtCam);
+
+    // Parent Call
     Super::GetCameraView(DeltaTime, DesiredView);
+
+    // Start a second counter that excludes the parent view update
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetCameraView (Excluding Super::)"), STAT_ACIGetCameraViewExc, STATGROUP_ACIExtCam);
 
     // Initialise the Offset
     float OffsetTrackFOV = DesiredView.FOV;

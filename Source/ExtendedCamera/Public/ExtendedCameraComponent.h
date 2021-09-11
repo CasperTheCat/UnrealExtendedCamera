@@ -7,6 +7,8 @@
 
 #include "ExtendedCameraComponent.generated.h"
 
+DECLARE_STATS_GROUP(TEXT("Acinonyx Extended Camera"), STATGROUP_ACIExtCam, STATCAT_Advanced);
+
 UCLASS(config = Game)
 class EXTENDEDCAMERA_API UExtendedCameraComponent : public UCameraComponent
 {

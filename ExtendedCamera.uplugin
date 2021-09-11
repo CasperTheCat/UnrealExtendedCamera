@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "Extended Camera",
-	"Description": "Extends Camera to allow for programaticly driven blends",
+	"Description": "Extends Camera to allow for programmatically driven blends",
 	"Category": "Camera",
 	"CreatedBy": "Acinonyx Ltd.",
 	"CreatedByURL": "",
@@ -18,7 +18,7 @@
 		{
 			"Name": "ExtendedCamera",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PreDefault"
 		}
 	]
 }
