@@ -9,6 +9,15 @@
 
 DECLARE_STATS_GROUP(TEXT("Acinonyx Extended Camera"), STATGROUP_ACIExtCam, STATCAT_Advanced);
 
+UENUM(BlueprintType)
+enum EExtendedCameraMode
+{
+	Ignore UMETA(DisplayName = "Ignore"),
+	KeepLos UMETA(DisplayName = "Keep LOS to Owner in Frame"),
+	KeepLosNoDot UMETA(DisplayName = "Always Keep Line of Sight"),
+	TOTAL_CAMERA_MODES UMETA(Hidden)
+};
+
 UCLASS(config = Game)
 class EXTENDEDCAMERA_API UExtendedCameraComponent : public UCameraComponent
 {
@@ -18,33 +27,44 @@ protected:
 	// Extended Camera Blend Points
 
 	// Primary Track - Set by users
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	FVector PrimaryTrackLocation;
 
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	FRotator PrimaryTrackRotation;
 
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	float PrimaryTrackFOV = 0.f;
 
 
 	// Secondary Track - Set by users
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	FVector SecondaryTrackLocation;
 
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	FRotator SecondaryTrackRotation;
 
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	float SecondaryTrackFOV = 0.f;
 
 	// Blend Amount for the first channel
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	float CameraPrimaryTrackBlendAlpha;
 
 	// Blend Amount
-	UPROPERTY(Transient)
+	UPROPERTY(SaveGame)
 	float CameraSecondaryTrackBlendAlpha;
+
+	// LOS Mode
+	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	TEnumAsByte<EExtendedCameraMode> CameraLOSMode;
+	
+	// Small Offset for FOV checks
+	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	float FOVCheckOffsetInRadians;
+
+
+
 
 public:
 	// Set the Blend Amount
@@ -111,6 +131,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetUseSecondaryTrack();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCameraMode(EExtendedCameraMode NewMode);
+
+	UFUNCTION(BlueprintCallable)
+	virtual TEnumAsByte<EExtendedCameraMode> GetCameraMode();
+
 
 	// Called by CalcCamera in AActor
 	//virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView);

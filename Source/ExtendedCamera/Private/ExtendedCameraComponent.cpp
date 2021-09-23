@@ -3,6 +3,10 @@
 #include "ExtendedCameraComponent.h"
 
 
+// TODO REMOVE
+#include "DrawDebugHelpers.h"
+
+
 // Set Primary
 void UExtendedCameraComponent::SetPrimaryCameraTrackAlpha(float Alpha)
 {
@@ -93,8 +97,18 @@ bool UExtendedCameraComponent::GetUseSecondaryTrack()
     return FMath::IsNearlyEqual(CameraSecondaryTrackBlendAlpha, 1.f);
 }
 
-void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
+void UExtendedCameraComponent::SetCameraMode(EExtendedCameraMode NewMode)
 {
+    CameraLOSMode = NewMode;
+}
+
+TEnumAsByte<EExtendedCameraMode> UExtendedCameraComponent::GetCameraMode()
+{
+    return CameraLOSMode;
+}
+
+void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
+{     
     // Start a counter here so it captures the super call
     DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetCameraView (Including Super::)"), STAT_ACIGetCameraViewInc, STATGROUP_ACIExtCam);
 
@@ -145,26 +159,80 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
 
 
     // Are we fully blended to the either game or primary track
-    if (FMath::IsNearlyZero(CameraSecondaryTrackBlendAlpha))
+    if (!FMath::IsNearlyZero(CameraSecondaryTrackBlendAlpha))
     {
-        // Do nothing when in game track
-        // Already set Desired when primary track
-        return;
+        // Are we fully blended to the secondary track
+        if (GetUseSecondaryTrack())
+        {
+            DesiredView.Location = SecondaryTrackLocation;
+            DesiredView.Rotation = SecondaryTrackRotation;
+            DesiredView.FOV = OffsetTrackFOV;
+        }
+
+        // We need to blend!
+        else
+        {
+            DesiredView.Location = FMath::Lerp(DesiredView.Location, SecondaryTrackLocation, CameraSecondaryTrackBlendAlpha);
+            DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, SecondaryTrackRotation, CameraSecondaryTrackBlendAlpha);
+            DesiredView.FOV = FMath::Lerp(DesiredView.FOV, OffsetTrackFOV, CameraPrimaryTrackBlendAlpha);
+        }
     }
 
-    // Are we fully blended to the secondary track
-    else if (GetUseSecondaryTrack())
+    // Do we LOS
+    // This is done twice, kinda. C'est la vie
+    if (EExtendedCameraMode::KeepLos == CameraLOSMode || EExtendedCameraMode::KeepLosNoDot == CameraLOSMode)
     {
-        DesiredView.Location = SecondaryTrackLocation;
-        DesiredView.Rotation = SecondaryTrackRotation;
-        DesiredView.FOV = OffsetTrackFOV;
-    }
+        auto componentOwner = GetOwner();
 
-    // We need to blend!
+        if (componentOwner)
+        {
+            auto ownerLocation = componentOwner->GetActorLocation();
+            auto FOVCheckRads = FMath::Cos(DesiredView.FOV * 0.5f) - FOVCheckOffsetInRadians;
+            bool FrameLOS = EExtendedCameraMode::KeepLos == CameraLOSMode && FVector::DotProduct(DesiredView.Rotation.Vector(), (ownerLocation - DesiredView.Location).GetSafeNormal()) > FOVCheckRads;
+
+            FString name;
+            componentOwner->GetName(name);
+            GEngine->AddOnScreenDebugMessage(-1, 13.2f, FColor::MakeRandomColor(), name);
+
+
+
+            if (EExtendedCameraMode::KeepLosNoDot == CameraLOSMode || FrameLOS)
+            {
+                auto world = GetWorld();
+
+                if (world)
+                {
+                    // Cast from owner to pawn
+                    FCollisionQueryParams params{};
+                    params.AddIgnoredActor(componentOwner);
+                    FHitResult LOSCheck{};
+
+                    world->LineTraceSingleByChannel(LOSCheck, ownerLocation, DesiredView.Location, this->GetCollisionObjectType(), params);
+
+                    if (LOSCheck.bBlockingHit)
+                    {
+                        DesiredView.Location = LOSCheck.ImpactPoint;
+                    }                   
+                }
+                else
+                {
+                    // How did we get here?
+                    checkNoEntry();
+                }
+            }
+            else
+            {
+                // Owner went out of frame
+                // We aren't looking at the player
+            }
+        }
+        else
+        {
+            //Owner is not valid
+        }
+    }
     else
     {
-        DesiredView.Location = FMath::Lerp(DesiredView.Location, SecondaryTrackLocation, CameraSecondaryTrackBlendAlpha);
-        DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, SecondaryTrackRotation, CameraSecondaryTrackBlendAlpha);
-        DesiredView.FOV = FMath::Lerp(DesiredView.FOV, OffsetTrackFOV, CameraPrimaryTrackBlendAlpha);
+        // Do nothing. We're not in LOS mode at all
     }
 }
