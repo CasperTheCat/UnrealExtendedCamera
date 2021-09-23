@@ -143,4 +143,31 @@ public:
 	//virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView);
 
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) override;
+
+public:
+	// Movers for C++
+	
+	// Set Primary Track 
+	virtual void SetCameraPrimaryTrack(FVector&& InLocation, FRotator&& InRotation, float InFOV);
+
+	// Set Secondary Track
+	virtual void SetCameraSecondaryTrack( FVector&& InLocation, FRotator&& InRotation, float InFOV);
+
+	// Set Primary Track
+	virtual void SetCameraPrimaryLocationRotation(FVector&& InLocation, FRotator&& InRotation);
+
+	// Set Secondary Track
+	virtual void SetCameraSecondaryLocationRotation(FVector&& InLocation, FRotator&& InRotation);
+
+	// Set Primary Track
+	virtual void SetCameraPrimaryRotation(FRotator&& InRotation);
+
+	// Set Secondary Track
+	virtual void SetCameraSecondaryRotation( FRotator&& InRotation);
+
+	// Set Primary Track
+	virtual void SetCameraPrimaryLocation(FVector&& InLocation);
+
+	// Set Secondary Track
+	virtual void SetCameraSecondaryLocation(FVector&& InLocation);
 };
