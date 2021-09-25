@@ -138,6 +138,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual TEnumAsByte<EExtendedCameraMode> GetCameraMode();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void KeepInFrameLineOfSight(AActor *Owner, FMinimalViewInfo& DesiredView);
+	virtual void KeepInFrameLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void KeepAnyLineOfSight(AActor* Owner, FMinimalViewInfo& DesiredView);
+	virtual void KeepAnyLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void CommonKeepLineOfSight(AActor* Owner, FMinimalViewInfo& DesiredView);
+	virtual void CommonKeepLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView);
 
 	// Called by CalcCamera in AActor
 	//virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView);

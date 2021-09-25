@@ -107,6 +107,41 @@ TEnumAsByte<EExtendedCameraMode> UExtendedCameraComponent::GetCameraMode()
     return CameraLOSMode;
 }
 
+void UExtendedCameraComponent::KeepInFrameLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView)
+{
+    CommonKeepLineOfSight(Owner, DesiredView);
+}
+
+void UExtendedCameraComponent::KeepAnyLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView)
+{
+    CommonKeepLineOfSight(Owner, DesiredView);
+}
+
+void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView)
+{
+    auto world = GetWorld();
+
+    if (world)
+    {
+        // Cast from owner to pawn
+        FCollisionQueryParams params{};
+        params.AddIgnoredActor(Owner);
+        FHitResult LOSCheck{};
+
+        world->LineTraceSingleByChannel(LOSCheck, Owner->GetActorLocation(), DesiredView.Location, this->GetCollisionObjectType(), params);
+
+        if (LOSCheck.bBlockingHit)
+        {
+            DesiredView.Location = LOSCheck.ImpactPoint;
+        }
+    }
+    else
+    {
+        // How did we get here?
+        checkNoEntry();
+    }
+}
+
 void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
 {     
     // Start a counter here so it captures the super call
@@ -190,35 +225,13 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
             auto FOVCheckRads = FMath::Cos(DesiredView.FOV * 0.5f) - FOVCheckOffsetInRadians;
             bool FrameLOS = EExtendedCameraMode::KeepLos == CameraLOSMode && FVector::DotProduct(DesiredView.Rotation.Vector(), (ownerLocation - DesiredView.Location).GetSafeNormal()) > FOVCheckRads;
 
-            FString name;
-            componentOwner->GetName(name);
-            GEngine->AddOnScreenDebugMessage(-1, 13.2f, FColor::MakeRandomColor(), name);
-
-
-
-            if (EExtendedCameraMode::KeepLosNoDot == CameraLOSMode || FrameLOS)
+            if ( FrameLOS)
             {
-                auto world = GetWorld();
-
-                if (world)
-                {
-                    // Cast from owner to pawn
-                    FCollisionQueryParams params{};
-                    params.AddIgnoredActor(componentOwner);
-                    FHitResult LOSCheck{};
-
-                    world->LineTraceSingleByChannel(LOSCheck, ownerLocation, DesiredView.Location, this->GetCollisionObjectType(), params);
-
-                    if (LOSCheck.bBlockingHit)
-                    {
-                        DesiredView.Location = LOSCheck.ImpactPoint;
-                    }                   
-                }
-                else
-                {
-                    // How did we get here?
-                    checkNoEntry();
-                }
+                KeepInFrameLineOfSight(componentOwner, DesiredView);
+            }
+            else if(EExtendedCameraMode::KeepLosNoDot == CameraLOSMode)
+            {
+                KeepAnyLineOfSight(componentOwner, DesiredView);
             }
             else
             {
