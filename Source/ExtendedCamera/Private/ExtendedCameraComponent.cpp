@@ -194,7 +194,7 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
 
 
     // Set OffsetTrack for the second if it's non-zero
-    if (!FMath::IsNearlyZero(PrimaryTrackFOV))
+    if (!FMath::IsNearlyZero(SecondaryTrackFOV))
     {
         OffsetTrackFOV = bUseAdditiveOffset ? (SecondaryTrackFOV + AdditiveFOVOffset) : SecondaryTrackFOV;
     }
@@ -221,7 +221,7 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
         {
             DesiredView.Location = FMath::Lerp(DesiredView.Location, SecondaryTrackTransform.GetLocation(), CameraSecondaryTrackBlendAlpha);
             DesiredView.Rotation = FMath::Lerp(DesiredView.Rotation, SecondaryTrackTransform.GetRotation().Rotator(), CameraSecondaryTrackBlendAlpha);
-            DesiredView.FOV = FMath::Lerp(DesiredView.FOV, OffsetTrackFOV, CameraPrimaryTrackBlendAlpha);
+            DesiredView.FOV = FMath::Lerp(DesiredView.FOV, OffsetTrackFOV, CameraSecondaryTrackBlendAlpha);
         }
     }
 
