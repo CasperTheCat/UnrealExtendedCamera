@@ -168,6 +168,29 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     // Initialise the Offset
     float OffsetTrackFOV = DesiredView.FOV;
 
+    // Write Tracked Values if we're using it
+    if (TrackedCamera)
+    {
+        const auto CameraComp = TrackedCamera->GetCameraComponent();
+        if (CameraComp)
+        {
+            // We need to write values
+            if (WriteTrackedToSecondary)
+            {
+                // Writing to Secondary
+                // SecondaryTrackTransform = TrackedCamera->GetComponentTransform();
+                // SecondaryTrackFOV = TrackedCamera->FieldOfView;
+                SecondaryTrackTransform = TrackedCamera->GetTransform();
+                SecondaryTrackFOV = CameraComp->FieldOfView;
+            }
+            else
+            {
+                PrimaryTrackTransform = TrackedCamera->GetTransform();
+                PrimaryTrackFOV = CameraComp->FieldOfView;
+            }
+        }
+    }
+
     // Set OffsetTrack for the primary blend if it's non-zero
     if (!FMath::IsNearlyZero(PrimaryTrackFOV))
     {

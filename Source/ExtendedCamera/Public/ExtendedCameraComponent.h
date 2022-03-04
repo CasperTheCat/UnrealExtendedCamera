@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/CameraActor.h"
 
 #include "ExtendedCameraComponent.generated.h"
 
@@ -25,6 +26,14 @@ class EXTENDEDCAMERA_API UExtendedCameraComponent : public UCameraComponent
 
 protected:
 	// Extended Camera Blend Points
+
+	// Target Camera
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	ACameraActor* TrackedCamera;
+
+	// Write Tracked Camera to Secondary Track, otherwise Primary
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool WriteTrackedToSecondary;
 
 	// Primary Track - Set by users
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
