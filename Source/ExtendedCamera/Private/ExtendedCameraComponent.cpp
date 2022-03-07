@@ -169,7 +169,7 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     float OffsetTrackFOV = DesiredView.FOV;
 
     // Write Tracked Values if we're using it
-    if (TrackedCamera)
+    if (!IgnoreTrackedCamera && IsValid(TrackedCamera))
     {
         const auto CameraComp = TrackedCamera->GetCameraComponent();
         if (CameraComp)

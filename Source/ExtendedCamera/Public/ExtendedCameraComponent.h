@@ -35,19 +35,32 @@ protected:
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
 	bool WriteTrackedToSecondary;
 
+	/**
+	 * You can either null the TrackedCamera or -- and this is easier in sequencer -- you can disable it here
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool IgnoreTrackedCamera;
+
 	// Primary Track - Set by users
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
 	FTransform PrimaryTrackTransform;
 
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "5.0", UIMax = "170", ClampMin = "0.001", ClampMax = "360.0", Units = deg))
+	/**
+	 * Primary FOV
+	 * Zero disables FOV blending
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.001", ClampMax = "360.0", Units = deg))
 	float PrimaryTrackFOV = 0.f;
-
 
 	// Secondary Track - Set by users
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
 	FTransform SecondaryTrackTransform;
 
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "5.0", UIMax = "170", ClampMin = "0.001", ClampMax = "360.0", Units = deg))
+	/**
+	 * Secondary FOV
+	 * Zero disables FOV blending
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.001", ClampMax = "360.0", Units = deg))
 	float SecondaryTrackFOV = 0.f;
 
 	// Blend Amount for the first channel
