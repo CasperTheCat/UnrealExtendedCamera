@@ -1,15 +1,16 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0",
+	"VersionName": "1.0.0.0",
 	"FriendlyName": "Extended Camera",
 	"Description": "Extends Camera to allow for programmatically driven blends",
 	"Category": "Camera",
 	"CreatedBy": "Acinonyx Ltd.",
-	"CreatedByURL": "",
-	"DocsURL": "",
-	"MarketplaceURL": "",
+	"CreatedByURL": "https://acinonyx.nz/",
+	"DocsURL": "https://acinonyx.nz/documentation-extendedcamera/",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/aec134405fb24f25929b9f1b58bce00c",
 	"SupportURL": "",
+	"EngineVersion" : "5.0.0",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
@@ -20,5 +21,6 @@
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault"
 		}
-	]
+	],
+	"WhitelistPlatforms": ["Win64"]
 }

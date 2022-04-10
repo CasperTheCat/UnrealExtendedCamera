@@ -1,4 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Acinonyx Ltd. 2022. All Rights Reserved.
 
 #pragma once
 
