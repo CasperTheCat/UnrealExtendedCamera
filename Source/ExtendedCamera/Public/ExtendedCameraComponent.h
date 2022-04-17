@@ -84,78 +84,78 @@ protected:
 
 public:
 	// Set the Blend Amount
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetPrimaryCameraTrackAlpha(float Alpha);
 
 	// Set the Blend Amount
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetSecondaryCameraTrackAlpha(float Alpha);
 
 	// Get the Blend Amount
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual float GetPrimaryCameraTrackAlpha();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual float GetSecondaryCameraTrackAlpha();
 
 	// Set Primary Track 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraPrimaryTrack(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation, float InFOV);
 
 	// Set Secondary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraSecondaryTrack(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation, float InFOV);
 
 	// Set Primary Track 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraPrimaryTransform(UPARAM(ref) FTransform& InTransform, float InFOV);
 
 	// Set Secondary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraSecondaryTransform(UPARAM(ref) FTransform& InTransform, float InFOV);
 	
 	// Set Primary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraPrimaryLocationRotation(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation);
 
 	// Set Secondary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraSecondaryLocationRotation(UPARAM(ref) FVector& InLocation, UPARAM(ref) FRotator& InRotation);
 
 	// Set Primary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraPrimaryRotation(UPARAM(ref) FRotator& InRotation);
 
 	// Set Secondary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraSecondaryRotation(UPARAM(ref) FRotator& InRotation);
 
 	// Set Primary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraPrimaryLocation(UPARAM(ref) FVector& InLocation);
 
 	// Set Secondary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraSecondaryLocation(UPARAM(ref) FVector& InLocation);
 
 	// Set Primary Track 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraPrimaryFOV(float InFOV);
 
 	// Set Secondary Track
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraSecondaryFOV(float InFOV);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual bool GetUsePrimaryTrack();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual bool GetUseSecondaryTrack();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetCameraMode(EExtendedCameraMode NewMode);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual TEnumAsByte<EExtendedCameraMode> GetCameraMode();
 
 	UFUNCTION(BlueprintNativeEvent)

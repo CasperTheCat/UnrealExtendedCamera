@@ -1,4 +1,4 @@
-// Copyright Acinonyx Ltd. 2021. All Rights Reserved.
+// Copyright Acinonyx Ltd. 2022. All Rights Reserved.
 
 using UnrealBuildTool;
 
