@@ -49,7 +49,7 @@ protected:
 	 * Primary FOV
 	 * Zero disables FOV blending
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.001", ClampMax = "360.0", Units = deg))
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.0", ClampMax = "360.0", Units = deg))
 	float PrimaryTrackFOV = 0.f;
 
 	// Secondary Track - Set by users
@@ -60,7 +60,7 @@ protected:
 	 * Secondary FOV
 	 * Zero disables FOV blending
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.001", ClampMax = "360.0", Units = deg))
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera", meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.0", ClampMax = "360.0", Units = deg))
 	float SecondaryTrackFOV = 0.f;
 
 	// Blend Amount for the first channel
