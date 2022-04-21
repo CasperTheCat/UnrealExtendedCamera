@@ -1,11 +1,8 @@
 // Copyright Acinonyx Ltd. 2022. All Rights Reserved.
 
 #include "ExtendedCameraComponent.h"
-
-
-// TODO REMOVE
-#include "DrawDebugHelpers.h"
-
+#include "CollisionQueryParams.h"
+#include "Engine/World.h"
 
 // Set Primary
 void UExtendedCameraComponent::SetPrimaryCameraTrackAlpha(float Alpha)
@@ -131,16 +128,16 @@ void UExtendedCameraComponent::KeepAnyLineOfSight_Implementation(AActor* Owner, 
 
 void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView)
 {
-    auto world = GetWorld();
+    auto World = GetWorld();
 
-    if (world)
+    if (World)
     {
         // Cast from owner to pawn
         FCollisionQueryParams params{};
         params.AddIgnoredActor(Owner);
         FHitResult LOSCheck{};
 
-        world->LineTraceSingleByChannel(LOSCheck, Owner->GetActorLocation(), DesiredView.Location, this->GetCollisionObjectType(), params);
+        World->LineTraceSingleByChannel(LOSCheck, Owner->GetActorLocation(), DesiredView.Location, this->GetCollisionObjectType(), params);
 
         if (LOSCheck.bBlockingHit)
         {
