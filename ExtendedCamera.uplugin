@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0.2.17",
+	"Version": 10030,
+	"VersionName": "1.0.3.18",
 	"FriendlyName": "Extended Camera",
 	"Description": "Extends Camera to allow for programmatically driven blends",
 	"Category": "Camera",
@@ -21,7 +21,8 @@
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
 			"PlatformAllowList": [
-				"Win64"
+				"Win64",
+				"Linux"
 			]
 		}
 	]
