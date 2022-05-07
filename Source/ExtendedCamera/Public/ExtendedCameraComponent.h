@@ -25,21 +25,99 @@ class EXTENDEDCAMERA_API UExtendedCameraComponent : public UCameraComponent
 	GENERATED_BODY()
 
 protected:
-	// Extended Camera Blend Points
+	// DollyZoom
+	UPROPERTY(SaveGame)
+	bool IsLOSBlocked;
+
+	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera")
+	float StoredLOSFOV;
+
+	// Dolly Zooms
+
+	/**
+	 * Dolly Zoom Reference Distance
+	 *
+	 * This variable is used to apply the FOV neutrally to the camera. At this
+	 * distance, the FOV is the set FOV in the camera.
+	 *
+	 * This feature only functions when SecondTrackDollyZoomEnabled is true,
+	 * and this variable will automatically update when
+	 * SecondTrackDollyZoomDistanceLiveUpdate is true
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	float SecondTrackDollyZoomReferenceDistance;
+
+	/**
+	 * Dolly Zoom Enabled for Second Track
+	 *
+	 * This enables the Dolly zoom for the second track
+	 * See SecondTrackDollyZoomReferenceDistance for more information
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool SecondTrackDollyZoomEnabled;
+
+	/**
+	 * Dolly Zoom Live Update Enabled for Second Track
+	 *
+	 * This enables the live update of the reference distance
+	 * See SecondTrackDollyZoomReferenceDistance for more information
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool SecondTrackDollyZoomDistanceLiveUpdate;
+
+	/**
+	 * Dolly Zoom Reference Distance
+	 *
+	 * This variable is used to apply the FOV neutrally to the camera. At this
+	 * distance, the FOV is the set FOV in the camera.
+	 *
+	 * This feature only functions when SecondTrackDollyZoomEnabled is true,
+	 * and this variable will automatically update when
+	 * SecondTrackDollyZoomDistanceLiveUpdate is true
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	float FirstTrackDollyZoomReferenceDistance;
+
+	/**
+	 * Dolly Zoom Enabled for Second Track
+	 *
+	 * This enables the Dolly zoom for the second track
+	 * See SecondTrackDollyZoomReferenceDistance for more information
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool FirstTrackDollyZoomEnabled;
+
+	/**
+	 * Dolly Zoom Live Update Enabled for Second Track
+	 *
+	 * This enables the live update of the reference distance
+	 * See SecondTrackDollyZoomReferenceDistance for more information
+	 */
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool FirstTrackDollyZoomDistanceLiveUpdate;
+	
+	// Extended Camera Blend Point
 
 	// Target Camera
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
-	ACameraActor* TrackedCamera;
+	ACameraActor* PrimaryTrackedCamera;
+	
+	// Target Camera
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	ACameraActor* SecondTrackedCamera;
 
 	// Write Tracked Camera to Secondary Track, otherwise Primary
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
-	bool WriteTrackedToSecondary;
+	//UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	//bool WriteTrackedToSecondary;
 
 	/**
 	 * You can either null the TrackedCamera or -- and this is easier in sequencer -- you can disable it here
 	 */
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
-	bool IgnoreTrackedCamera;
+	bool IgnorePrimaryTrackedCamera;
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool IgnoreSecondTrackedCamera;
 
 	// Primary Track - Set by users
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
@@ -79,6 +157,9 @@ protected:
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
 	float FOVCheckOffsetInRadians;
 
+	// DollyZoom for LOS Modes
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	bool UseDollyZoomForLOS;
 
 
 
@@ -169,6 +250,11 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void CommonKeepLineOfSight(AActor* Owner, FMinimalViewInfo& DesiredView);
 	virtual void CommonKeepLineOfSight_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView);
+	
+	virtual void DollyZoom(AActor* Owner, FMinimalViewInfo& DesiredView, FHitResult &LOSCheck);
+
+	UFUNCTION(BlueprintCallable)
+	virtual float DollyZoom(float ReferenceDistance, float ReferenceFOV, float CurrentDistance);
 
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) override;
 

@@ -136,19 +136,76 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor* Owne
         FCollisionQueryParams params{};
         params.AddIgnoredActor(Owner);
         FHitResult LOSCheck{};
-
+        
         World->LineTraceSingleByChannel(LOSCheck, Owner->GetActorLocation(), DesiredView.Location, this->GetCollisionObjectType(), params);
 
+
+        
         if (LOSCheck.bBlockingHit)
         {
-            DesiredView.Location = LOSCheck.ImpactPoint;
+            if(!IsLOSBlocked)
+            {
+                StoredLOSFOV = DesiredView.FOV;    
+            }
+            
+            if(UseDollyZoomForLOS)
+            {
+                DollyZoom(Owner, DesiredView, LOSCheck);
+            }
+            // Must be done after dollyzoom, otherwise we'll lerp nothing
+            DesiredView.Location = LOSCheck.ImpactPoint;// + LOSCheck.ImpactNormal * 0.1f;
         }
+        IsLOSBlocked = LOSCheck.bBlockingHit;
     }
     else
     {
         // How did we get here?
         checkNoEntry();
     }
+}
+
+void UExtendedCameraComponent::DollyZoom(AActor* Owner, FMinimalViewInfo& DesiredView, FHitResult &LOSCheck)
+{
+   
+    // Compute the theta now. This is just FOV at distance X
+    //const auto CurrentTheta = FMath::DegreesToRadians(DesiredView.FOV * 0.5f);
+    const auto DVL = DesiredView.Location;
+    const auto OAL = Owner->GetActorLocation();
+    const auto LIP = LOSCheck.ImpactPoint;
+    //const auto CurrentDistanceSQ = FVector::DistSquared(OAL, DVL);
+    //const auto NewDistanceSQ = FVector::DistSquared(OAL, LIP);
+    //const auto DistanceRatio = FMath::Sqrt(CurrentDistanceSQ / NewDistanceSQ);
+
+    //DesiredView.FOV = 2 * FMath::RadiansToDegrees(FMath::Atan((FMath::Tan(CurrentTheta) * FVector::Dist(OAL, DVL) / FVector::Dist(OAL, LIP)))); 
+    //DesiredView.FOV = 2 * FMath::RadiansToDegrees(FMath::Atan(FMath::Tan(CurrentTheta) * DistanceRatio));
+    DesiredView.FOV = DollyZoom(FVector::Dist(OAL, DVL), DesiredView.FOV, FVector::Dist(OAL, LIP));
+}
+
+float UExtendedCameraComponent::DollyZoom(float ReferenceDistance, float ReferenceFOV, float CurrentDistance)
+{
+    // A bit of theory
+    // A size of TD := 2(tan(0) * x) where theta is FOV/2
+    //     /|  -
+    //   /  |  |
+    // /__x_|  | TD
+    // \    |  |
+    //   \  |  |
+    //     \|  -
+    // This computes the width or height, depending on the which theta we use
+    // We only have horizontal FOV, but the FOV shouldn't be varying between zooms
+    //
+    // Ultimately, We want TD to remain the same as we move from x to x' and we care about theta prime
+    // 2(tan(0) * x) = 2(tan(0') * x')
+    // tan(0) * x = tan(0') * x'
+    // tan(0') = (tan(0) * x) / x'
+    // 0' = atan((tan(0) * x) / x')
+    //
+    // Finally, we can combine x / x' as a ratio between the distances
+    // 0' = atan(tan(0) * r)
+    
+    const auto ReferenceTheta = FMath::DegreesToRadians(ReferenceFOV * 0.5f);
+    const auto DistanceRatio = ReferenceDistance / CurrentDistance;
+    return 2 * FMath::RadiansToDegrees(FMath::Atan(FMath::Tan(ReferenceTheta) * DistanceRatio));
 }
 
 void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
@@ -162,32 +219,34 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     // Start a second counter that excludes the parent view update
     DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetCameraView (Excluding Super::)"), STAT_ACIGetCameraViewExc, STATGROUP_ACIExtCam);
 
+    // Get Owner
+    const auto ComponentOwner = GetOwner();
+    
     // Initialise the Offset
-    float OffsetTrackFOV = DesiredView.FOV;
+    float OffsetTrackFOV = IsLOSBlocked ? StoredLOSFOV : DesiredView.FOV;
 
     // Write Tracked Values if we're using it
-    if (!IgnoreTrackedCamera && IsValid(TrackedCamera))
+    if (!IgnorePrimaryTrackedCamera && IsValid(PrimaryTrackedCamera))
     {
-        const auto CameraComp = TrackedCamera->GetCameraComponent();
+        const auto CameraComp = PrimaryTrackedCamera->GetCameraComponent();
         if (CameraComp)
         {
-            // We need to write values
-            if (WriteTrackedToSecondary)
-            {
-                // Writing to Secondary
-                // SecondaryTrackTransform = TrackedCamera->GetComponentTransform();
-                // SecondaryTrackFOV = TrackedCamera->FieldOfView;
-                SecondaryTrackTransform = TrackedCamera->GetTransform();
-                SecondaryTrackFOV = CameraComp->FieldOfView;
-            }
-            else
-            {
-                PrimaryTrackTransform = TrackedCamera->GetTransform();
-                PrimaryTrackFOV = CameraComp->FieldOfView;
-            }
+            PrimaryTrackTransform = PrimaryTrackedCamera->GetTransform();
+            PrimaryTrackFOV = CameraComp->FieldOfView;
         }
     }
 
+    // Write Tracked Values if we're using it
+    if (!IgnoreSecondTrackedCamera && IsValid(SecondTrackedCamera))
+    {
+        const auto CameraComp = SecondTrackedCamera->GetCameraComponent();
+        if (CameraComp)
+        {
+            SecondaryTrackTransform = SecondTrackedCamera->GetTransform();
+            SecondaryTrackFOV = CameraComp->FieldOfView;
+        }
+    }
+    
     // Set OffsetTrack for the primary blend if it's non-zero
     if (!FMath::IsNearlyZero(PrimaryTrackFOV))
     {
@@ -198,6 +257,17 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     // Check for the primary track
     if (!FMath::IsNearlyZero(CameraPrimaryTrackBlendAlpha))
     {
+        // DollyZoom
+        if(FirstTrackDollyZoomEnabled)
+        {
+            if (FirstTrackDollyZoomDistanceLiveUpdate)
+            {
+                FirstTrackDollyZoomReferenceDistance = FVector::Dist(ComponentOwner->GetActorLocation(), PrimaryTrackTransform.GetLocation());
+            }
+        
+            OffsetTrackFOV = DollyZoom(FirstTrackDollyZoomReferenceDistance, SecondaryTrackFOV, FVector::Dist(ComponentOwner->GetActorLocation(), PrimaryTrackTransform.GetLocation()));
+        }
+        
         if (GetUsePrimaryTrack())
         {
             DesiredView.Location = PrimaryTrackTransform.GetLocation();
@@ -228,6 +298,17 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     // Are we fully blended to the either game or primary track
     if (!FMath::IsNearlyZero(CameraSecondaryTrackBlendAlpha))
     {
+        // DollyZoom
+        if(SecondTrackDollyZoomEnabled)
+        {
+            if (SecondTrackDollyZoomDistanceLiveUpdate)
+            {
+                SecondTrackDollyZoomReferenceDistance = FVector::Dist(ComponentOwner->GetActorLocation(), SecondaryTrackTransform.GetLocation());
+            }
+
+            OffsetTrackFOV = DollyZoom(SecondTrackDollyZoomReferenceDistance, SecondaryTrackFOV, FVector::Dist(ComponentOwner->GetActorLocation(), SecondaryTrackTransform.GetLocation()));
+        }
+        
         // Are we fully blended to the secondary track
         if (GetUseSecondaryTrack())
         {
@@ -249,21 +330,20 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     // This is done twice, kinda. C'est la vie
     if (EExtendedCameraMode::KeepLos == CameraLOSMode || EExtendedCameraMode::KeepLosNoDot == CameraLOSMode)
     {
-        auto componentOwner = GetOwner();
-
-        if (componentOwner)
+        if (ComponentOwner)
         {
-            auto ownerLocation = componentOwner->GetActorLocation();
-            auto FOVCheckRads = FMath::Cos(DesiredView.FOV * 0.5f) - FOVCheckOffsetInRadians;
+            auto ownerLocation = ComponentOwner->GetActorLocation();
+            auto FOVAsRads = FMath::DegreesToRadians(DesiredView.FOV * 0.5f);
+            auto FOVCheckRads = FMath::Cos(FOVAsRads) - FOVCheckOffsetInRadians;
             bool FrameLOS = EExtendedCameraMode::KeepLos == CameraLOSMode && FVector::DotProduct(DesiredView.Rotation.Vector(), (ownerLocation - DesiredView.Location).GetSafeNormal()) > FOVCheckRads;
 
             if ( FrameLOS)
             {
-                KeepInFrameLineOfSight(componentOwner, DesiredView);
+                KeepInFrameLineOfSight(ComponentOwner, DesiredView);
             }
             else if(EExtendedCameraMode::KeepLosNoDot == CameraLOSMode)
             {
-                KeepAnyLineOfSight(componentOwner, DesiredView);
+                KeepAnyLineOfSight(ComponentOwner, DesiredView);
             }
             else
             {
