@@ -253,7 +253,7 @@ public:
 	
 	virtual void DollyZoom(AActor* Owner, FMinimalViewInfo& DesiredView, FHitResult &LOSCheck);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual float DollyZoom(float ReferenceDistance, float ReferenceFOV, float CurrentDistance);
 
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) override;
