@@ -16,7 +16,19 @@ enum EExtendedCameraMode
 	Ignore UMETA(DisplayName = "Ignore"),
 	KeepLos UMETA(DisplayName = "Keep LOS to Owner in Frame"),
 	KeepLosNoDot UMETA(DisplayName = "Always Keep Line of Sight"),
+	KeepLosWithinLimit UMETA(DisplayName = "Use FOV Offset as Limit"),
 	TOTAL_CAMERA_MODES UMETA(Hidden)
+};
+
+UENUM(BlueprintType)
+enum EExtendedCameraDriverMode
+{
+	ReferenceCameraDriven UMETA(DisplayName = "Reference Camera"),
+	Compat UMETA(DisplayName = "Compatibility Mode"),
+	DataDriven UMETA(DisplayName = "Direct Data Driven"),
+	LocAndAim UMETA(DisplayName = "Location and Aim"),
+
+	TOTAL_CAMERA_DRIVER_MODES UMETA(Hidden)
 };
 
 UCLASS(config = Game, BlueprintType, Blueprintable, ClassGroup=Camera, meta=(BlueprintSpawnableComponent))
@@ -32,7 +44,9 @@ protected:
 	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera")
 	float StoredLOSFOV;
 
+	///// ///// ////////// ///// /////
 	// Dolly Zooms
+	//
 
 	/**
 	 * Dolly Zoom Reference Distance
@@ -44,7 +58,7 @@ protected:
 	 * and this variable will automatically update when
 	 * SecondTrackDollyZoomDistanceLiveUpdate is true
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Dolly Zoom")
 	float SecondTrackDollyZoomReferenceDistance;
 
 	/**
@@ -53,7 +67,7 @@ protected:
 	 * This enables the Dolly zoom for the second track
 	 * See SecondTrackDollyZoomReferenceDistance for more information
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Dolly Zoom")
 	bool SecondTrackDollyZoomEnabled;
 
 	/**
@@ -62,7 +76,7 @@ protected:
 	 * This enables the live update of the reference distance
 	 * See SecondTrackDollyZoomReferenceDistance for more information
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Dolly Zoom")
 	bool SecondTrackDollyZoomDistanceLiveUpdate;
 
 	/**
@@ -75,7 +89,7 @@ protected:
 	 * and this variable will automatically update when
 	 * SecondTrackDollyZoomDistanceLiveUpdate is true
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Dolly Zoom")
 	float FirstTrackDollyZoomReferenceDistance;
 
 	/**
@@ -84,7 +98,7 @@ protected:
 	 * This enables the Dolly zoom for the second track
 	 * See SecondTrackDollyZoomReferenceDistance for more information
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Dolly Zoom")
 	bool FirstTrackDollyZoomEnabled;
 
 	/**
@@ -93,18 +107,65 @@ protected:
 	 * This enables the live update of the reference distance
 	 * See SecondTrackDollyZoomReferenceDistance for more information
 	 */
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Dolly Zoom")
 	bool FirstTrackDollyZoomDistanceLiveUpdate;
 	
+
+	///// ///// ////////// ///// /////
 	// Extended Camera Blend Point
+	//
 
 	// Target Camera
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
 	ACameraActor* PrimaryTrackedCamera;
 	
 	// Target Camera
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
 	ACameraActor* SecondTrackedCamera;
+
+
+
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+	AActor* PrimaryTrackLocator;
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+	AActor* PrimaryTrackAim;
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+	FVector PrimaryTrackAimOffset;
+
+	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|First Track")
+	FRotator PrimaryTrackPastFrameLookAt;
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+	float PrimaryTrackAimInterpolationSpeed;
+
+	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+	bool PrimaryTrackAimDebug;
+
+
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+	AActor* SecondaryTrackLocator;
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+	AActor* SecondaryTrackAim;
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+	FVector SecondaryTrackAimOffset;
+
+	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Second Track")
+	FRotator SecondaryTrackPastFrameLookAt;
+
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+	float SecondaryTrackAimInterpolationSpeed;
+
+	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+	bool SecondaryTrackAimDebug;
+
+
+
 
 	// Write Tracked Camera to Secondary Track, otherwise Primary
 	//UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
@@ -158,12 +219,60 @@ protected:
 	float FOVCheckOffsetInRadians;
 
 	// DollyZoom for LOS Modes
-	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Line of Sight")
 	bool UseDollyZoomForLOS;
 
 
+	///// ///// ////////// ///// /////
+	// Smooth Return
+	//
+
+	// Enables and disables SmoothReturn
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Smooth Return")
+	bool SmoothReturnOnLineOfSight;
+
+	// Stored Location
+	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Smooth Return")
+	FVector StoredPreviousLocationForReturn;
+
+	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Smooth Return")
+	float SmoothReturnSpeed;
+
+	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Smooth Return")
+	bool WasLineOfSightBlockedRecently;
+
+
+	///// ///// ////////// ///// /////
+	// Driver Modes
+	//
+
+	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	TEnumAsByte<EExtendedCameraDriverMode> FirstTrackCameraDriverMode;
+
+
+	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+	TEnumAsByte<EExtendedCameraDriverMode> SecondTrackCameraDriverMode;
+
+
+protected:
+	// Function to SmoothReturn
+	UFUNCTION(BlueprintNativeEvent)
+	void SmoothReturn(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);
+	virtual void SmoothReturn_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);
+
+	// Function to SmoothReturn
+	UFUNCTION(BlueprintNativeEvent)
+	void LineOfCheckHandler(AActor* Owner, FMinimalViewInfo& DesiredView);
+	virtual void LineOfCheckHandler_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView);
+
+	// Function to SmoothReturn
+	UFUNCTION(BlueprintNativeEvent)
+	void TrackingHandler(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);
+	virtual void TrackingHandler_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);
 
 public:
+	UExtendedCameraComponent();
+
 	// Set the Blend Amount
 	UFUNCTION(BlueprintCallable, Category = "Extended Camera")
 	virtual void SetPrimaryCameraTrackAlpha(float Alpha);

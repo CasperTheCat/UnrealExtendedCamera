@@ -1,8 +1,203 @@
 // Copyright Acinonyx Ltd. 2022. All Rights Reserved.
 
 #include "ExtendedCameraComponent.h"
+#include "DrawDebugHelpers.h"
 #include "CollisionQueryParams.h"
 #include "Engine/World.h"
+
+void UExtendedCameraComponent::SmoothReturn_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime)
+{
+    if (SmoothReturnOnLineOfSight && WasLineOfSightBlockedRecently)
+    {
+        // If LOS is blocked, do nothing
+        // Also do nothing is LOS was not blocked recently
+
+        if (FVector::DistSquared(StoredPreviousLocationForReturn, DesiredView.Location) < KINDA_SMALL_NUMBER)
+        {
+            WasLineOfSightBlockedRecently = false;
+            return;
+        }
+
+        StoredPreviousLocationForReturn = FMath::VInterpTo(StoredPreviousLocationForReturn, DesiredView.Location, DeltaTime, SmoothReturnSpeed);
+        DesiredView.Location = StoredPreviousLocationForReturn;
+    }
+}
+
+void UExtendedCameraComponent::LineOfCheckHandler_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView)
+{
+    if (Owner)
+    {
+        auto ownerLocation = Owner->GetActorLocation();
+
+        if (EExtendedCameraMode::KeepLos == CameraLOSMode)
+        {
+            auto FOVAsRads = FMath::DegreesToRadians(DesiredView.FOV * 0.5f);
+            auto FOVCheckRads = FMath::Cos(FOVAsRads) - FOVCheckOffsetInRadians;
+
+            if (FVector::DotProduct(DesiredView.Rotation.Vector(), (ownerLocation - DesiredView.Location).GetSafeNormal()) > FOVCheckRads)
+            {
+                KeepInFrameLineOfSight(Owner, DesiredView);
+            }
+        }
+
+        else if (EExtendedCameraMode::KeepLosWithinLimit == CameraLOSMode)
+        {
+            if (FVector::DotProduct(DesiredView.Rotation.Vector(), (ownerLocation - DesiredView.Location).GetSafeNormal()) > FOVCheckOffsetInRadians)
+            {
+                KeepInFrameLineOfSight(Owner, DesiredView);
+            }
+        }
+
+        else if (EExtendedCameraMode::KeepLosNoDot == CameraLOSMode)
+        {
+            KeepAnyLineOfSight(Owner, DesiredView);
+        }
+
+        else
+        {
+            // Owner went out of frame
+            // We aren't looking at the player
+        }
+    }
+    else
+    {
+        //Owner is not valid
+    }
+}
+
+void UExtendedCameraComponent::TrackingHandler_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime)
+{
+    if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Compat)
+    {
+        // Old Version. Sets the same stuff to maintain backwards compatibility
+        // Write Tracked Values if we're using it
+        if (!IgnorePrimaryTrackedCamera && IsValid(PrimaryTrackedCamera))
+        {
+            const auto CameraComp = PrimaryTrackedCamera->GetCameraComponent();
+            if (CameraComp)
+            {
+                PrimaryTrackTransform = PrimaryTrackedCamera->GetTransform();
+                PrimaryTrackFOV = CameraComp->FieldOfView;
+            }
+        }
+    }
+    else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::DataDriven)
+    {
+        // Do Nothing? Data is being directly driven
+    }
+    else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::ReferenceCameraDriven)
+    {
+        // New way to specify that we wish to track a camera directly
+        if (IsValid(PrimaryTrackedCamera))
+        {
+            const auto CameraComp = PrimaryTrackedCamera->GetCameraComponent();
+            if (CameraComp)
+            {
+                PrimaryTrackTransform = PrimaryTrackedCamera->GetTransform();
+                PrimaryTrackFOV = CameraComp->FieldOfView;
+            }
+        }
+    }
+    else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim)
+    {
+        // Uses Locs and Aims
+        // Aim is not valid without locator. We need the data from it
+        if (IsValid(PrimaryTrackLocator))
+        {
+            auto Locator = PrimaryTrackLocator->GetActorLocation();
+            SetCameraPrimaryLocation(Locator);
+
+            // Uses Locs and Aims
+            if (IsValid(PrimaryTrackAim))
+            {
+                const auto BaseAimLocation = PrimaryTrackAim->GetActorTransform().TransformPosition(PrimaryTrackAimOffset);
+                const auto LookAt = BaseAimLocation - Locator;
+                FRotator FinalRotation = FMath::RInterpTo(PrimaryTrackPastFrameLookAt, LookAt.Rotation(), DeltaTime, PrimaryTrackAimInterpolationSpeed);
+                PrimaryTrackPastFrameLookAt = FinalRotation;
+                SetCameraPrimaryRotation(FinalRotation);
+
+#if ENABLE_DRAW_DEBUG
+                if (PrimaryTrackAimDebug)
+                {
+                    DrawDebugSolidBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor(200, 200, 32, 128));
+                    DrawDebugBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor::Black);
+                }
+#endif // ENABLE_DRAW_DEBUG
+            }
+        }
+    }
+
+
+    // Second
+    if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::Compat)
+    {
+        // Write Tracked Values if we're using it
+        if (!IgnoreSecondTrackedCamera && IsValid(SecondTrackedCamera))
+        {
+            const auto CameraComp = SecondTrackedCamera->GetCameraComponent();
+            if (CameraComp)
+            {
+                SecondaryTrackTransform = SecondTrackedCamera->GetTransform();
+                SecondaryTrackFOV = CameraComp->FieldOfView;
+            }
+        }
+    }
+    else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::DataDriven)
+    {
+        // Do Nothing? Data is being directly driven
+    }
+    else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::ReferenceCameraDriven)
+    {
+        // Write Tracked Values if we're using it
+        if (IsValid(SecondTrackedCamera))
+        {
+            const auto CameraComp = SecondTrackedCamera->GetCameraComponent();
+            if (CameraComp)
+            {
+                SecondaryTrackTransform = SecondTrackedCamera->GetTransform();
+                SecondaryTrackFOV = CameraComp->FieldOfView;
+            }
+        }
+    }
+    else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim)
+    {
+        // Uses Locs and Aims
+        // Aim is not valid without locator. We need the data from it
+        if (IsValid(SecondaryTrackLocator))
+        {
+            auto Locator = SecondaryTrackLocator->GetActorLocation();
+            SetCameraSecondaryLocation(Locator);
+
+            // Uses Locs and Aims
+            if (IsValid(SecondaryTrackAim))
+            {
+                const auto BaseAimLocation = SecondaryTrackAim->GetActorTransform().TransformPosition(SecondaryTrackAimOffset);
+                const auto LookAt = BaseAimLocation - Locator;
+                FRotator FinalRotation = FMath::RInterpTo(SecondaryTrackPastFrameLookAt, LookAt.Rotation(), DeltaTime, SecondaryTrackAimInterpolationSpeed);
+                SecondaryTrackPastFrameLookAt = FinalRotation;
+                SetCameraSecondaryRotation(FinalRotation);
+
+#if ENABLE_DRAW_DEBUG
+                if (SecondaryTrackAimDebug)
+                {
+                    DrawDebugSolidBox(GetWorld(), LookAt, FVector(12.f), FColor(250, 150, 32, 128));
+                    DrawDebugBox(GetWorld(), LookAt, FVector(12.f), FColor::Black);
+                }
+#endif // ENABLE_DRAW_DEBUG
+            }
+        }
+    }
+}
+
+UExtendedCameraComponent::UExtendedCameraComponent()
+    : SmoothReturnOnLineOfSight(false)
+    , SmoothReturnSpeed(1)
+    , WasLineOfSightBlockedRecently(false)
+    , FirstTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
+    , SecondTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
+{
+
+}
 
 // Set Primary
 void UExtendedCameraComponent::SetPrimaryCameraTrackAlpha(float Alpha)
@@ -152,8 +347,18 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor* Owne
             {
                 DollyZoom(Owner, DesiredView, LOSCheck);
             }
+
             // Must be done after dollyzoom, otherwise we'll lerp nothing
             DesiredView.Location = LOSCheck.ImpactPoint;// + LOSCheck.ImpactNormal * 0.1f;
+
+            // Update to reflect the offset position of the camera
+            // We need it later when the hit is not blocked
+            if (SmoothReturnOnLineOfSight)
+            {
+                // This gets set back to false when the lerp ends
+                WasLineOfSightBlockedRecently = true;
+                StoredPreviousLocationForReturn = DesiredView.Location;
+            }
         }
         IsLOSBlocked = LOSCheck.bBlockingHit;
     }
@@ -225,27 +430,10 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
     // Initialise the Offset
     float OffsetTrackFOV = IsLOSBlocked ? StoredLOSFOV : DesiredView.FOV;
 
-    // Write Tracked Values if we're using it
-    if (!IgnorePrimaryTrackedCamera && IsValid(PrimaryTrackedCamera))
-    {
-        const auto CameraComp = PrimaryTrackedCamera->GetCameraComponent();
-        if (CameraComp)
-        {
-            PrimaryTrackTransform = PrimaryTrackedCamera->GetTransform();
-            PrimaryTrackFOV = CameraComp->FieldOfView;
-        }
-    }
+    TrackingHandler(ComponentOwner, DesiredView, DeltaTime);
 
-    // Write Tracked Values if we're using it
-    if (!IgnoreSecondTrackedCamera && IsValid(SecondTrackedCamera))
-    {
-        const auto CameraComp = SecondTrackedCamera->GetCameraComponent();
-        if (CameraComp)
-        {
-            SecondaryTrackTransform = SecondTrackedCamera->GetTransform();
-            SecondaryTrackFOV = CameraComp->FieldOfView;
-        }
-    }
+
+    // Blending
     
     // Set OffsetTrack for the primary blend if it's non-zero
     if (!FMath::IsNearlyZero(PrimaryTrackFOV))
@@ -326,40 +514,13 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
         }
     }
 
-    // Do we LOS
-    // This is done twice, kinda. C'est la vie
-    if (EExtendedCameraMode::KeepLos == CameraLOSMode || EExtendedCameraMode::KeepLosNoDot == CameraLOSMode)
-    {
-        if (ComponentOwner)
-        {
-            auto ownerLocation = ComponentOwner->GetActorLocation();
-            auto FOVAsRads = FMath::DegreesToRadians(DesiredView.FOV * 0.5f);
-            auto FOVCheckRads = FMath::Cos(FOVAsRads) - FOVCheckOffsetInRadians;
-            bool FrameLOS = EExtendedCameraMode::KeepLos == CameraLOSMode && FVector::DotProduct(DesiredView.Rotation.Vector(), (ownerLocation - DesiredView.Location).GetSafeNormal()) > FOVCheckRads;
+    // Do SmoothReturn first, otherwise we can push the camera back out of bounds
+    SmoothReturn(ComponentOwner, DesiredView, DeltaTime);
 
-            if ( FrameLOS)
-            {
-                KeepInFrameLineOfSight(ComponentOwner, DesiredView);
-            }
-            else if(EExtendedCameraMode::KeepLosNoDot == CameraLOSMode)
-            {
-                KeepAnyLineOfSight(ComponentOwner, DesiredView);
-            }
-            else
-            {
-                // Owner went out of frame
-                // We aren't looking at the player
-            }
-        }
-        else
-        {
-            //Owner is not valid
-        }
-    }
-    else
-    {
-        // Do nothing. We're not in LOS mode at all
-    }
+    // Now LOS
+    LineOfCheckHandler(ComponentOwner, DesiredView);
+
+
 }
 
 void UExtendedCameraComponent::SetCameraPrimaryTrack(FVector&& InLocation, FRotator&& InRotation, float InFOV)
