@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 20000,
-	"VersionName": "2.0.0.22",
+	"Version": 21000,
+	"VersionName": "2.1.0.23",
 	"FriendlyName": "Extended Camera",
 	"Description": "Extends Camera to allow for programmatically driven blends",
 	"Category": "Camera",

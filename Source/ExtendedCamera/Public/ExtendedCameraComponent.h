@@ -27,6 +27,9 @@ enum EExtendedCameraDriverMode
 	Compat UMETA(DisplayName = "Compatibility Mode"),
 	DataDriven UMETA(DisplayName = "Direct Data Driven"),
 	LocAndAim UMETA(DisplayName = "Location and Aim"),
+	Skeleton UMETA(DisplayName = "Animation Locator and Aim"),
+	SkeletonLocator UMETA(DisplayName = "Animation Locator and Object Aim"),
+	SkeletonAim UMETA(DisplayName = "Object Locator and Animation Aim"),
 
 	TOTAL_CAMERA_DRIVER_MODES UMETA(Hidden)
 };
@@ -144,6 +147,11 @@ protected:
 	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
 	bool PrimaryTrackAimDebug;
 
+	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+	FName PrimaryLocatorBoneName;
+
+	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+	FName PrimaryAimBoneName;
 
 
 	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
@@ -163,6 +171,12 @@ protected:
 
 	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
 	bool SecondaryTrackAimDebug;
+
+	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+	FName SecondaryLocatorBoneName;
+
+	UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+	FName SecondaryAimBoneName;
 
 
 
@@ -235,7 +249,7 @@ protected:
 	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Smooth Return")
 	FVector StoredPreviousLocationForReturn;
 
-	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Smooth Return")
+	UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Smooth Return")
 	float SmoothReturnSpeed;
 
 	UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Smooth Return")
@@ -254,18 +268,31 @@ protected:
 	TEnumAsByte<EExtendedCameraDriverMode> SecondTrackCameraDriverMode;
 
 
+
 protected:
+	UFUNCTION(BlueprintNativeEvent)
+	FVector GetAimLocation(AActor* Owner);
+	virtual FVector GetAimLocation_Implementation(AActor* Owner);
+
+	UFUNCTION(BlueprintNativeEvent)
+	FVector GetActorTrackLocation(AActor* Owner, EExtendedCameraDriverMode CameraMode, FName LocatorBoneName);
+	virtual FVector GetActorTrackLocation_Implementation(AActor* Owner, EExtendedCameraDriverMode CameraMode, FName LocatorBoneName);
+
+	UFUNCTION(BlueprintNativeEvent)
+	FTransform GetActorAimLocation(AActor* Owner, EExtendedCameraDriverMode CameraMode, FName LocatorBoneName);
+	virtual FTransform GetActorAimLocation_Implementation(AActor* Owner, EExtendedCameraDriverMode CameraMode, FName LocatorBoneName);
+
 	// Function to SmoothReturn
 	UFUNCTION(BlueprintNativeEvent)
 	void SmoothReturn(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);
 	virtual void SmoothReturn_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);
 
-	// Function to SmoothReturn
+	// Function to wrap LOS checks
 	UFUNCTION(BlueprintNativeEvent)
 	void LineOfCheckHandler(AActor* Owner, FMinimalViewInfo& DesiredView);
 	virtual void LineOfCheckHandler_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView);
 
-	// Function to SmoothReturn
+	// Function to track
 	UFUNCTION(BlueprintNativeEvent)
 	void TrackingHandler(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);
 	virtual void TrackingHandler_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime);

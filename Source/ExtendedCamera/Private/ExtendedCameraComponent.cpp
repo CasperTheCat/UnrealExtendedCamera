@@ -3,16 +3,170 @@
 #include "ExtendedCameraComponent.h"
 #include "DrawDebugHelpers.h"
 #include "CollisionQueryParams.h"
+#include "GameFramework/Character.h"
 #include "Engine/World.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
+
+FVector UExtendedCameraComponent::GetAimLocation_Implementation(AActor* Owner)
+{
+    // Do we need return the aim point?
+    // Or just the ComponentOwner's location?
+    auto OAL = Owner->GetActorLocation();
+    FVector AimPoint = FVector::ZeroVector;
+
+    if (
+        IsValid(PrimaryTrackAim) &&
+        (
+            FirstTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim ||
+            FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton ||
+            FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonAim ||
+            FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonLocator
+        )
+    )
+    {
+        AimPoint = FMath::Lerp(
+            OAL,
+            GetActorAimLocation(PrimaryTrackAim, FirstTrackCameraDriverMode, PrimaryAimBoneName).TransformPosition(PrimaryTrackAimOffset),
+            CameraPrimaryTrackBlendAlpha
+        );
+    }
+    else
+    {
+        // Get normal
+        AimPoint = OAL;
+    }
+
+
+
+    if (
+        IsValid(SecondaryTrackAim) &&
+        (
+            SecondTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim ||
+            SecondTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton ||
+            SecondTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonAim ||
+            SecondTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonLocator
+            )
+        )
+    {
+        AimPoint = FMath::Lerp(
+            AimPoint,
+            GetActorAimLocation(SecondaryTrackAim, SecondTrackCameraDriverMode, SecondaryAimBoneName).TransformPosition(SecondaryTrackAimOffset),
+            CameraSecondaryTrackBlendAlpha
+        );
+    }
+    else
+    {
+        // Get normal
+        AimPoint = FMath::Lerp(
+            AimPoint,
+            OAL,
+            CameraSecondaryTrackBlendAlpha
+        );
+    }
+
+
+    return AimPoint;
+}
+
+FVector UExtendedCameraComponent::GetActorTrackLocation_Implementation(AActor* Owner, EExtendedCameraDriverMode CameraMode, FName LocatorBoneName)
+{
+    // We need non-skeletal locator
+    if (EExtendedCameraDriverMode::LocAndAim == CameraMode || EExtendedCameraDriverMode::SkeletonAim == CameraMode)
+    {
+        return Owner->GetActorLocation();
+    }
+    else if (EExtendedCameraDriverMode::Skeleton == CameraMode || EExtendedCameraDriverMode::SkeletonLocator == CameraMode)
+    {
+        // Ask for the bone
+        auto AsCharacter = Cast<ACharacter>(Owner);
+        if (AsCharacter)
+        {
+            // Get the bones
+            USkeletalMeshComponent *Mesh = AsCharacter->GetMesh();
+            if (Mesh)
+            {
+                //Mesh->GetSocketLocation(LocatorBoneName);
+                return Mesh->GetBoneLocation(LocatorBoneName);
+            }
+            {
+                UE_LOG(LogExtendedCamera, Warning, TEXT("Invalid Bone Name (%s)"), *LocatorBoneName.ToString());
+            }
+        }
+        else
+        {
+            // Uh?
+            UE_LOG(LogExtendedCamera, Warning, TEXT("Mesh is invalid? (%s)"), *LocatorBoneName.ToString());
+            //checkNoEntry();
+        }
+    }
+    else
+    {
+        checkNoEntry();
+    }
+
+    return FVector();
+}
+
+FTransform UExtendedCameraComponent::GetActorAimLocation_Implementation(AActor* Owner, EExtendedCameraDriverMode CameraMode, FName LocatorBoneName)
+{
+    // We need non-skeletal aim
+    if (EExtendedCameraDriverMode::LocAndAim == CameraMode || EExtendedCameraDriverMode::SkeletonLocator == CameraMode)
+    {
+        return Owner->GetActorTransform();
+    }
+    else if (EExtendedCameraDriverMode::Skeleton == CameraMode || EExtendedCameraDriverMode::SkeletonAim == CameraMode)
+    {
+        // Ask for the bone
+        auto AsCharacter = Cast<ACharacter>(Owner);
+        if (AsCharacter)
+        {
+            // Get the bones
+            USkeletalMeshComponent* Mesh = AsCharacter->GetMesh();
+            if (Mesh)
+            {
+                //Mesh->GetSocketLocation(LocatorBoneName);
+                auto BoneIdx = Mesh->GetBoneIndex(LocatorBoneName);
+                if (BoneIdx != INDEX_NONE)
+                {
+                    return Mesh->GetBoneTransform(BoneIdx);
+
+                }
+                else
+                {
+                    UE_LOG(LogExtendedCamera, Warning, TEXT("Invalid Bone Name (%s)"), *LocatorBoneName.ToString());
+                    //checkNoEntry();
+                }
+            }
+            {
+                UE_LOG(LogExtendedCamera, Warning, TEXT("Mesh is invalid? (%s)"), *LocatorBoneName.ToString());
+                //checkNoEntry();
+            }
+        }
+        else
+        {
+            // Uh?
+            checkNoEntry();
+        }
+    }
+    else
+    {
+        checkNoEntry();
+    }
+
+    return FTransform();
+}
 
 void UExtendedCameraComponent::SmoothReturn_Implementation(AActor* Owner, FMinimalViewInfo& DesiredView, float DeltaTime)
 {
-    if (SmoothReturnOnLineOfSight && WasLineOfSightBlockedRecently)
+    if (SmoothReturnOnLineOfSight && WasLineOfSightBlockedRecently && !IsLOSBlocked)
     {
         // If LOS is blocked, do nothing
         // Also do nothing is LOS was not blocked recently
 
-        if (FVector::DistSquared(StoredPreviousLocationForReturn, DesiredView.Location) < KINDA_SMALL_NUMBER)
+        GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::SanitizeFloat(FVector::DistSquared(StoredPreviousLocationForReturn, DesiredView.Location)));
+
+        if (FVector::DistSquared(StoredPreviousLocationForReturn, DesiredView.Location) < 27.f)
         {
             WasLineOfSightBlockedRecently = false;
             return;
@@ -98,19 +252,26 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor* Owner, FMi
             }
         }
     }
-    else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim)
+    else if
+    (
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonAim ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonLocator
+    )
     {
         // Uses Locs and Aims
         // Aim is not valid without locator. We need the data from it
         if (IsValid(PrimaryTrackLocator))
         {
-            auto Locator = PrimaryTrackLocator->GetActorLocation();
+            auto Locator = GetActorTrackLocation(PrimaryTrackLocator, FirstTrackCameraDriverMode, PrimaryLocatorBoneName);
+            //auto Locator = PrimaryTrackLocator->GetActorLocation();
             SetCameraPrimaryLocation(Locator);
 
             // Uses Locs and Aims
             if (IsValid(PrimaryTrackAim))
             {
-                const auto BaseAimLocation = PrimaryTrackAim->GetActorTransform().TransformPosition(PrimaryTrackAimOffset);
+                const auto BaseAimLocation = GetActorAimLocation(PrimaryTrackAim, FirstTrackCameraDriverMode, PrimaryAimBoneName).TransformPosition(PrimaryTrackAimOffset);
                 const auto LookAt = BaseAimLocation - Locator;
                 FRotator FinalRotation = FMath::RInterpTo(PrimaryTrackPastFrameLookAt, LookAt.Rotation(), DeltaTime, PrimaryTrackAimInterpolationSpeed);
                 PrimaryTrackPastFrameLookAt = FinalRotation;
@@ -159,19 +320,26 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor* Owner, FMi
             }
         }
     }
-    else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim)
+    else if
+    (
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::LocAndAim ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonAim ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonLocator
+    )
     {
         // Uses Locs and Aims
         // Aim is not valid without locator. We need the data from it
         if (IsValid(SecondaryTrackLocator))
         {
-            auto Locator = SecondaryTrackLocator->GetActorLocation();
+            auto Locator = GetActorTrackLocation(SecondaryTrackLocator, SecondTrackCameraDriverMode, SecondaryLocatorBoneName);
+            //auto Locator = PrimaryTrackLocator->GetActorLocation();
             SetCameraSecondaryLocation(Locator);
 
             // Uses Locs and Aims
             if (IsValid(SecondaryTrackAim))
             {
-                const auto BaseAimLocation = SecondaryTrackAim->GetActorTransform().TransformPosition(SecondaryTrackAimOffset);
+                const auto BaseAimLocation = GetActorAimLocation(SecondaryTrackAim, SecondTrackCameraDriverMode, SecondaryAimBoneName).TransformPosition(SecondaryTrackAimOffset);
                 const auto LookAt = BaseAimLocation - Locator;
                 FRotator FinalRotation = FMath::RInterpTo(SecondaryTrackPastFrameLookAt, LookAt.Rotation(), DeltaTime, SecondaryTrackAimInterpolationSpeed);
                 SecondaryTrackPastFrameLookAt = FinalRotation;
@@ -180,8 +348,8 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor* Owner, FMi
 #if ENABLE_DRAW_DEBUG
                 if (SecondaryTrackAimDebug)
                 {
-                    DrawDebugSolidBox(GetWorld(), LookAt, FVector(12.f), FColor(250, 150, 32, 128));
-                    DrawDebugBox(GetWorld(), LookAt, FVector(12.f), FColor::Black);
+                    DrawDebugSolidBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor(250, 150, 32, 128));
+                    DrawDebugBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor::Black);
                 }
 #endif // ENABLE_DRAW_DEBUG
             }
@@ -331,8 +499,23 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor* Owne
         FCollisionQueryParams params{};
         params.AddIgnoredActor(Owner);
         FHitResult LOSCheck{};
+
+        // Owner Location is assumed to be aim. It's not always though. So we need to get the aim
+        auto Aim = GetAimLocation(Owner);
         
-        World->LineTraceSingleByChannel(LOSCheck, Owner->GetActorLocation(), DesiredView.Location, this->GetCollisionObjectType(), params);
+        World->LineTraceSingleByChannel(LOSCheck, Aim, DesiredView.Location, this->GetCollisionObjectType(), params);
+
+#if ENABLE_DRAW_DEBUG
+        if (PrimaryTrackAimDebug || SecondaryTrackAimDebug)
+        {
+            DrawDebugLine(GetWorld(), Aim, DesiredView.Location, FColor::Red);
+
+            DrawDebugSolidBox(GetWorld(), Aim, FVector(12.f), FColor(200, 20, 132, 128));
+            DrawDebugBox(GetWorld(), Aim, FVector(12.f), FColor::Black);
+        }
+#endif // ENABLE_DRAW_DEBUG
+
+
 
 
         
@@ -357,7 +540,7 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor* Owne
             {
                 // This gets set back to false when the lerp ends
                 WasLineOfSightBlockedRecently = true;
-                StoredPreviousLocationForReturn = DesiredView.Location;
+                StoredPreviousLocationForReturn = LOSCheck.ImpactPoint;
             }
         }
         IsLOSBlocked = LOSCheck.bBlockingHit;
@@ -514,11 +697,13 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& 
         }
     }
 
+    // Now LOS
+    LineOfCheckHandler(ComponentOwner, DesiredView);
+
     // Do SmoothReturn first, otherwise we can push the camera back out of bounds
     SmoothReturn(ComponentOwner, DesiredView, DeltaTime);
 
-    // Now LOS
-    LineOfCheckHandler(ComponentOwner, DesiredView);
+
 
 
 }
