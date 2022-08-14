@@ -6,7 +6,6 @@
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
 
-
 DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
 
 FVector UExtendedCameraComponent::GetAimLocation_Implementation(AActor *Owner)

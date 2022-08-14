@@ -6,7 +6,6 @@
 #include "Camera/CameraComponent.h"
 #include "CoreMinimal.h"
 
-
 #include "ExtendedCameraComponent.generated.h"
 
 DECLARE_STATS_GROUP(TEXT("Acinonyx Extended Camera"), STATGROUP_ACIExtCam, STATCAT_Advanced);
