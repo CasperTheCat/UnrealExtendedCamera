@@ -351,11 +351,11 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
 }
 
 UExtendedCameraComponent::UExtendedCameraComponent()
-    : SmoothReturnOnLineOfSight(false),
-      SmoothReturnSpeed(1),
-      WasLineOfSightBlockedRecently(false),
-      FirstTrackCameraDriverMode(EExtendedCameraDriverMode::Compat),
-      SecondTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
+    : SmoothReturnOnLineOfSight(false)
+    , SmoothReturnSpeed(1)
+    , WasLineOfSightBlockedRecently(false)
+    , FirstTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
+    , SecondTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
 {
 }
 
