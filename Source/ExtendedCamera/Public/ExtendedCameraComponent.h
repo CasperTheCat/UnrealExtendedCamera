@@ -245,6 +245,16 @@ protected:
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Smooth Return")
     float SmoothReturnSpeed;
 
+    /**
+     * Smooth Return Finished Threshold
+     *
+     * Value to check when the return has been completed and we can jump to live
+     * This helps when the blend is not very aggressive as you can get a bit of lag
+     * while the player keeps moving
+     */
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Smooth Return")
+    float ReturnFinishedThresholdSquared;
+
     UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Smooth Return")
     bool WasLineOfSightBlockedRecently;
 

@@ -2,9 +2,12 @@
 
 #include "ExtendedCameraComponent.h"
 #include "CollisionQueryParams.h"
-#include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
+
+#if ENABLE_DRAW_DEBUG
+#include "DrawDebugHelpers.h"
+#endif // ENABLE_DRAW_DEBUG
 
 DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
 
@@ -70,7 +73,6 @@ FVector UExtendedCameraComponent::GetActorTrackLocation_Implementation(AActor *O
             USkeletalMeshComponent *Mesh = AsCharacter->GetMesh();
             if (Mesh)
             {
-                // Mesh->GetSocketLocation(LocatorBoneName);
                 return Mesh->GetBoneLocation(LocatorBoneName);
             }
             {
@@ -79,14 +81,13 @@ FVector UExtendedCameraComponent::GetActorTrackLocation_Implementation(AActor *O
         }
         else
         {
-            // Uh?
             UE_LOG(LogExtendedCamera, Warning, TEXT("Mesh is invalid? (%s)"), *LocatorBoneName.ToString());
-            // checkNoEntry();
         }
     }
     else
     {
-        checkNoEntry();
+        UE_LOG(LogExtendedCamera, Error, TEXT("GetActorTrackLocation called with incorrect parameters"));
+        // checkNoEntry();
     }
 
     return FVector();
@@ -120,23 +121,22 @@ FTransform UExtendedCameraComponent::GetActorAimLocation_Implementation(AActor *
                 else
                 {
                     UE_LOG(LogExtendedCamera, Warning, TEXT("Invalid Bone Name (%s)"), *LocatorBoneName.ToString());
-                    // checkNoEntry();
                 }
             }
             {
                 UE_LOG(LogExtendedCamera, Warning, TEXT("Mesh is invalid? (%s)"), *LocatorBoneName.ToString());
-                // checkNoEntry();
             }
         }
         else
         {
-            // Uh?
-            checkNoEntry();
+            UE_LOG(LogExtendedCamera, Warning, TEXT("Aim Target is not a subclass of ACharacter"));
         }
     }
     else
     {
-        checkNoEntry();
+        // This one is actually an error, but we want to avoid crashing end-user's UE
+        // checkNoEntry();
+        UE_LOG(LogExtendedCamera, Error, TEXT("GetActorAimLocation called with incorrect parameters"));
     }
 
     return FTransform();
@@ -150,11 +150,8 @@ void UExtendedCameraComponent::SmoothReturn_Implementation(AActor *Owner, FMinim
         // If LOS is blocked, do nothing
         // Also do nothing is LOS was not blocked recently
 
-        GEngine->AddOnScreenDebugMessage(
-            -1, 0.1f, FColor::Red,
-            FString::SanitizeFloat(FVector::DistSquared(StoredPreviousLocationForReturn, DesiredView.Location)));
-
-        if (FVector::DistSquared(StoredPreviousLocationForReturn, DesiredView.Location) < 27.f)
+        if (FVector::DistSquared(StoredPreviousLocationForReturn, DesiredView.Location) <
+            ReturnFinishedThresholdSquared)
         {
             WasLineOfSightBlockedRecently = false;
             return;
@@ -264,7 +261,9 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
                 const auto BaseAimLocation =
                     GetActorAimLocation(PrimaryTrackAim, FirstTrackCameraDriverMode, PrimaryAimBoneName)
                         .TransformPosition(PrimaryTrackAimOffset);
+
                 const auto LookAt = BaseAimLocation - Locator;
+
                 FRotator FinalRotation = FMath::RInterpTo(PrimaryTrackPastFrameLookAt, LookAt.Rotation(), DeltaTime,
                                                           PrimaryTrackAimInterpolationSpeed);
                 PrimaryTrackPastFrameLookAt = FinalRotation;
@@ -356,6 +355,7 @@ UExtendedCameraComponent::UExtendedCameraComponent()
     , WasLineOfSightBlockedRecently(false)
     , FirstTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
     , SecondTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
+    , ReturnFinishedThresholdSquared(27.f)
 {
 }
 
@@ -605,7 +605,6 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo &
     TrackingHandler(ComponentOwner, DesiredView, DeltaTime);
 
     // Blending
-
     // Set OffsetTrack for the primary blend if it's non-zero
     if (!FMath::IsNearlyZero(PrimaryTrackFOV))
     {
