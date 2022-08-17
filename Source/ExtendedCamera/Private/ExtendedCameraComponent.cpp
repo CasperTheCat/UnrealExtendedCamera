@@ -4,10 +4,11 @@
 #include "CollisionQueryParams.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
+#include "Components\SkeletalMeshComponent.h"
 
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
 #include "DrawDebugHelpers.h"
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 
 DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
 
@@ -352,10 +353,10 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
 UExtendedCameraComponent::UExtendedCameraComponent()
     : SmoothReturnOnLineOfSight(false)
     , SmoothReturnSpeed(1)
+    , ReturnFinishedThresholdSquared(27.f)
     , WasLineOfSightBlockedRecently(false)
     , FirstTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
     , SecondTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
-    , ReturnFinishedThresholdSquared(27.f)
 {
 }
 
