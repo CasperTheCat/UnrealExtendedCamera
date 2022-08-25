@@ -6,9 +6,9 @@
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
 
-#if WITH_EDITORONLY_DATA
+#if ENABLE_DRAW_DEBUG
 #include "DrawDebugHelpers.h"
-#endif // WITH_EDITORONLY_DATA
+#endif // ENABLE_DRAW_DEBUG
 
 DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
 
@@ -295,13 +295,13 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
                 PrimaryTrackPastFrameLookAt = FinalRotation;
                 SetCameraPrimaryRotation(FinalRotation);
 
-#if WITH_EDITORONLY_DATA
+#if ENABLE_DRAW_DEBUG
                 if (PrimaryTrackAimDebug)
                 {
                     DrawDebugSolidBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor(200, 200, 32, 128));
                     DrawDebugBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor::Black);
                 }
-#endif // WITH_EDITORONLY_DATA
+#endif // ENABLE_DRAW_DEBUG
             }
         }
     }
@@ -363,13 +363,13 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
                 SecondaryTrackPastFrameLookAt = FinalRotation;
                 SetCameraSecondaryRotation(FinalRotation);
 
-#if WITH_EDITORONLY_DATA
+#if ENABLE_DRAW_DEBUG
                 if (SecondaryTrackAimDebug)
                 {
                     DrawDebugSolidBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor(250, 150, 32, 128));
                     DrawDebugBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor::Black);
                 }
-#endif // WITH_EDITORONLY_DATA
+#endif // ENABLE_DRAW_DEBUG
             }
         }
     }
@@ -601,7 +601,7 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor *Owne
 
         World->LineTraceSingleByChannel(LOSCheck, Aim, DesiredView.Location, this->GetCollisionObjectType(), params);
 
-#if WITH_EDITORONLY_DATA
+#if ENABLE_DRAW_DEBUG
         if (PrimaryTrackAimDebug || SecondaryTrackAimDebug)
         {
             DrawDebugLine(GetWorld(), Aim, DesiredView.Location, FColor::Red);
@@ -609,7 +609,7 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor *Owne
             DrawDebugSolidBox(GetWorld(), Aim, FVector(12.f), FColor(200, 20, 132, 128));
             DrawDebugBox(GetWorld(), Aim, FVector(12.f), FColor::Black);
         }
-#endif // WITH_EDITORONLY_DATA
+#endif // ENABLE_DRAW_DEBUG
 
         if (LOSCheck.bBlockingHit)
         {
