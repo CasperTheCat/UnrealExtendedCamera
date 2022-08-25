@@ -148,7 +148,7 @@ protected:
 #if ENABLE_DRAW_DEBUG
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     bool PrimaryTrackAimDebug;
-#endif
+#endif // ENABLE_DRAW_DEBUG
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FName PrimaryLocatorBoneName;
@@ -174,7 +174,7 @@ protected:
 #if ENABLE_DRAW_DEBUG
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     bool SecondaryTrackAimDebug;
-#endif
+#endif // ENABLE_DRAW_DEBUG
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryLocatorBoneName;

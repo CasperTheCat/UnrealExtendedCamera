@@ -950,13 +950,13 @@ void UExtendedCameraComponent::SetPrimaryTrackAimDebug(bool Enabled)
 {
 #if ENABLE_DRAW_DEBUG
     PrimaryTrackAimDebug = Enabled;
-#endif
+#endif // ENABLE_DRAW_DEBUG
 }
 
 void UExtendedCameraComponent::SetSecondaryTrackAimDebug(bool Enabled)
 {
 #if ENABLE_DRAW_DEBUG
     SecondaryTrackAimDebug = Enabled;
-#endif
+#endif // ENABLE_DRAW_DEBUG
 }
 
