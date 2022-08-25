@@ -8,6 +8,11 @@
 
 #include "ExtendedCameraComponent.generated.h"
 
+// Fix for v4.27
+#ifndef ENABLE_DRAW_DEBUG
+#define ENABLE_DRAW_DEBUG WITH_EDITORONLY_DATA
+#endif
+
 DECLARE_STATS_GROUP(TEXT("Acinonyx Extended Camera"), STATGROUP_ACIExtCam, STATCAT_Advanced);
 
 UENUM(BlueprintType)
@@ -140,8 +145,10 @@ protected:
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     float PrimaryTrackAimInterpolationSpeed;
 
+#if ENABLE_DRAW_DEBUG
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     bool PrimaryTrackAimDebug;
+#endif
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FName PrimaryLocatorBoneName;
@@ -164,8 +171,10 @@ protected:
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     float SecondaryTrackAimInterpolationSpeed;
 
+#if ENABLE_DRAW_DEBUG
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     bool SecondaryTrackAimDebug;
+#endif
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryLocatorBoneName;
