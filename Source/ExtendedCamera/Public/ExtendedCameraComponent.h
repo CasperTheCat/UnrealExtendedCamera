@@ -8,6 +8,11 @@
 
 #include "ExtendedCameraComponent.generated.h"
 
+// Fix for v4.27
+#ifndef ENABLE_DRAW_DEBUG
+#define ENABLE_DRAW_DEBUG WITH_EDITORONLY_DATA
+#endif
+
 DECLARE_STATS_GROUP(TEXT("Acinonyx Extended Camera"), STATGROUP_ACIExtCam, STATCAT_Advanced);
 
 UENUM(BlueprintType)
@@ -118,63 +123,63 @@ protected:
     //
 
     // Target Camera
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Reference Camera")
     ACameraActor *PrimaryTrackedCamera;
 
     // Target Camera
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
-    ACameraActor *SecondTrackedCamera;
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Reference Camera")
+    ACameraActor *SecondaryTrackedCamera;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     AActor *PrimaryTrackLocator;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     AActor *PrimaryTrackAim;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FVector PrimaryTrackAimOffset;
 
-    UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|First Track")
+    UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|First Track|Locator")
     FRotator PrimaryTrackPastFrameLookAt;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     float PrimaryTrackAimInterpolationSpeed;
 
-#if WITH_EDITORONLY_DATA
-    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+#if ENABLE_DRAW_DEBUG
+    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     bool PrimaryTrackAimDebug;
-#endif // WITH_EDITORONLY_DATA
+#endif // ENABLE_DRAW_DEBUG
 
-    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FName PrimaryLocatorBoneName;
 
-    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FName PrimaryAimBoneName;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     AActor *SecondaryTrackLocator;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     AActor *SecondaryTrackAim;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FVector SecondaryTrackAimOffset;
 
-    UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Second Track")
+    UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Second Track|Locator")
     FRotator SecondaryTrackPastFrameLookAt;
 
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     float SecondaryTrackAimInterpolationSpeed;
 
-#if WITH_EDITORONLY_DATA
-    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+#if ENABLE_DRAW_DEBUG
+    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     bool SecondaryTrackAimDebug;
-#endif // WITH_EDITORONLY_DATA
+#endif // ENABLE_DRAW_DEBUG
 
-    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryLocatorBoneName;
 
-    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+    UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryAimBoneName;
 
     // Write Tracked Camera to Secondary Track, otherwise Primary
@@ -266,10 +271,10 @@ protected:
     // Driver Modes
     //
 
-    UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+    UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
     TEnumAsByte<EExtendedCameraDriverMode> FirstTrackCameraDriverMode;
 
-    UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
+    UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
     TEnumAsByte<EExtendedCameraDriverMode> SecondTrackCameraDriverMode;
 
 protected:
@@ -302,77 +307,82 @@ protected:
     void TrackingHandler(AActor *Owner, FMinimalViewInfo &DesiredView, float DeltaTime);
     virtual void TrackingHandler_Implementation(AActor *Owner, FMinimalViewInfo &DesiredView, float DeltaTime);
 
+
+
+
+
+
 public:
     UExtendedCameraComponent();
 
     // Set the Blend Amount
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetPrimaryCameraTrackAlpha(float Alpha);
 
     // Set the Blend Amount
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetSecondaryCameraTrackAlpha(float Alpha);
 
     // Get the Blend Amount
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual float GetPrimaryCameraTrackAlpha();
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual float GetSecondaryCameraTrackAlpha();
 
     // Set Primary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetCameraPrimaryTrack(UPARAM(ref) FVector &InLocation, UPARAM(ref) FRotator &InRotation, float InFOV);
 
     // Set Secondary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetCameraSecondaryTrack(UPARAM(ref) FVector &InLocation, UPARAM(ref) FRotator &InRotation,
                                          float InFOV);
 
     // Set Primary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetCameraPrimaryTransform(UPARAM(ref) FTransform &InTransform, float InFOV);
 
     // Set Secondary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetCameraSecondaryTransform(UPARAM(ref) FTransform &InTransform, float InFOV);
 
     // Set Primary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetCameraPrimaryLocationRotation(UPARAM(ref) FVector &InLocation, UPARAM(ref) FRotator &InRotation);
 
     // Set Secondary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetCameraSecondaryLocationRotation(UPARAM(ref) FVector &InLocation, UPARAM(ref) FRotator &InRotation);
 
     // Set Primary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetCameraPrimaryRotation(UPARAM(ref) FRotator &InRotation);
 
     // Set Secondary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetCameraSecondaryRotation(UPARAM(ref) FRotator &InRotation);
 
     // Set Primary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetCameraPrimaryLocation(UPARAM(ref) FVector &InLocation);
 
     // Set Secondary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetCameraSecondaryLocation(UPARAM(ref) FVector &InLocation);
 
     // Set Primary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetCameraPrimaryFOV(float InFOV);
 
     // Set Secondary Track
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetCameraSecondaryFOV(float InFOV);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual bool GetUsePrimaryTrack();
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual bool GetUseSecondaryTrack();
 
     UFUNCTION(BlueprintCallable, Category = "Extended Camera")
@@ -380,6 +390,121 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Extended Camera")
     virtual TEnumAsByte<EExtendedCameraMode> GetCameraMode();
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackDollyZoomReferenceDistance(float Distance);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackDollyZoomReferenceDistance(float Distance);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackDollyZoomEnabled(bool Enabled);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackDollyZoomEnabled(bool Enabled);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackDollyZoomLiveUpdate(bool Enabled);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackDollyZoomLiveUpdate(bool Enabled);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackedCamera(ACameraActor *TrackedCamera);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackedCamera(ACameraActor *TrackedCamera);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackLocator(AActor *TrackedActor);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackLocator(AActor *TrackedActor);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackAim(AActor *TrackedActor);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackAim(AActor *TrackedActor);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackAimOffset(UPARAM(ref) FVector &AimOffset);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackAimOffset(UPARAM(ref) FVector &AimOffset);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    virtual void SetPrimaryTrackAimInterpolationSpeed(float Speed);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    virtual void SetSecondaryTrackAimInterpolationSpeed(float Speed);
+
+
+    /**
+     * Set Primary Locator Bone Name
+     *
+     * If the actor is already set, and mode is correct, check for the bone
+     * Returns whether the bone is valid
+     */
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Locator")
+    virtual bool SetPrimaryLocatorBoneName(FName TrackedBoneName);
+
+    /**
+     * Set Secondary Locator Bone Name
+     *
+     * If the actor is already set, and mode is correct, check for the bone
+     * Returns whether the bone is valid
+     */
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Locator")
+    virtual bool SetSecondaryLocatorBoneName(FName TrackedBoneName);
+
+    /**
+     * Set Primary Aim Bone Name
+     *
+     * If the actor is already set, and mode is correct, check for the bone
+     * Returns whether the bone is valid
+     */
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Locator")
+    virtual bool SetPrimaryLocatorAimName(FName TrackedAimName);
+
+    /**
+     * Set Secondary Aim Bone Name
+     *
+     * If the actor is already set, and mode is correct, check for the bone
+     * Returns whether the bone is valid
+     */
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Locator")
+    virtual bool SetSecondaryLocatorAimName(FName TrackedAimName);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera")
+    virtual void SetFOVCheckOffsetInRadians(float FOVOffset);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Dolly Zoom")
+    virtual void SetUseDollyZoom(bool NewState);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Smooth Return")
+    virtual void SetSmoothReturn(bool NewState);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Smooth Return")
+    virtual void SetSmoothReturnSpeed(float NewReturnSpeed);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Smooth Return")
+    virtual void SetSmoothReturnDeadzone(float NewDeadzone);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
+    virtual void SetPrimaryTrackMode(EExtendedCameraDriverMode NewMode);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
+    virtual void SetSecondaryTrackMode(EExtendedCameraDriverMode NewMode);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Debug")
+    virtual void SetPrimaryTrackAimDebug(bool Enabled);
+
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Debug")
+    virtual void SetSecondaryTrackAimDebug(bool Enabled);
+
+
+
 
     UFUNCTION(BlueprintNativeEvent)
     void KeepInFrameLineOfSight(AActor *Owner, FMinimalViewInfo &DesiredView);
@@ -399,6 +524,8 @@ public:
     virtual float DollyZoom(float ReferenceDistance, float ReferenceFOV, float CurrentDistance);
 
     virtual void GetCameraView(float DeltaTime, FMinimalViewInfo &DesiredView) override;
+
+    virtual void BeginPlay() override;
 
 public:
     // Movers for C++

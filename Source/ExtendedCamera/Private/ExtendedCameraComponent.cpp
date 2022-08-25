@@ -12,6 +12,31 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
 
+
+bool BoneCheck(AActor* Actor, FName TrackedName)
+{
+    // Ask for the bone
+    if (IsValid(Actor))
+    {
+
+        auto AsCharacter = Cast<ACharacter>(Actor);
+        if (AsCharacter)
+        {
+            // Get the bones
+            USkeletalMeshComponent *Mesh = AsCharacter->GetMesh();
+            if (Mesh)
+            {
+                auto Index = Mesh->GetBoneIndex(TrackedName);
+
+                return Index != INDEX_NONE;
+            }
+        }
+    }
+
+    return false;
+}
+
+
 FVector UExtendedCameraComponent::GetAimLocation_Implementation(AActor *Owner)
 {
     // Do we need return the aim point?
@@ -285,12 +310,12 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
     if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::Compat)
     {
         // Write Tracked Values if we're using it
-        if (!IgnoreSecondTrackedCamera && IsValid(SecondTrackedCamera))
+        if (!IgnoreSecondTrackedCamera && IsValid(SecondaryTrackedCamera))
         {
-            const auto CameraComp = SecondTrackedCamera->GetCameraComponent();
+            const auto CameraComp = SecondaryTrackedCamera->GetCameraComponent();
             if (CameraComp)
             {
-                SecondaryTrackTransform = SecondTrackedCamera->GetTransform();
+                SecondaryTrackTransform = SecondaryTrackedCamera->GetTransform();
                 SecondaryTrackFOV = CameraComp->FieldOfView;
             }
         }
@@ -302,12 +327,12 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
     else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::ReferenceCameraDriven)
     {
         // Write Tracked Values if we're using it
-        if (IsValid(SecondTrackedCamera))
+        if (IsValid(SecondaryTrackedCamera))
         {
-            const auto CameraComp = SecondTrackedCamera->GetCameraComponent();
+            const auto CameraComp = SecondaryTrackedCamera->GetCameraComponent();
             if (CameraComp)
             {
-                SecondaryTrackTransform = SecondTrackedCamera->GetTransform();
+                SecondaryTrackTransform = SecondaryTrackedCamera->GetTransform();
                 SecondaryTrackFOV = CameraComp->FieldOfView;
             }
         }
@@ -468,6 +493,86 @@ void UExtendedCameraComponent::SetCameraMode(EExtendedCameraMode NewMode)
 TEnumAsByte<EExtendedCameraMode> UExtendedCameraComponent::GetCameraMode()
 {
     return CameraLOSMode;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackDollyZoomReferenceDistance(float Distance)
+{
+    FirstTrackDollyZoomReferenceDistance = Distance;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackDollyZoomReferenceDistance(float Distance)
+{
+    SecondTrackDollyZoomReferenceDistance = Distance;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackDollyZoomEnabled(bool Enabled)
+{
+    FirstTrackDollyZoomEnabled = Enabled;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackDollyZoomEnabled(bool Enabled)
+{
+    SecondTrackDollyZoomEnabled = Enabled;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackDollyZoomLiveUpdate(bool Enabled)
+{
+    FirstTrackDollyZoomDistanceLiveUpdate = Enabled;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackDollyZoomLiveUpdate(bool Enabled)
+{
+    SecondTrackDollyZoomDistanceLiveUpdate = Enabled;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackedCamera(ACameraActor *TrackedCamera)
+{
+    PrimaryTrackedCamera = TrackedCamera;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackedCamera(ACameraActor *TrackedCamera)
+{
+    SecondaryTrackedCamera = TrackedCamera;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackLocator(AActor *TrackedActor)
+{
+    PrimaryTrackLocator = TrackedActor;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackLocator(AActor *TrackedActor)
+{
+    SecondaryTrackLocator = TrackedActor;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackAim(AActor *TrackedActor)
+{
+    PrimaryTrackLocator = TrackedActor;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackAim(AActor *TrackedActor)
+{
+    SecondaryTrackAim = TrackedActor;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackAimInterpolationSpeed(float Speed)
+{
+    PrimaryTrackAimInterpolationSpeed = Speed;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackAimInterpolationSpeed(float Speed)
+{
+    SecondaryTrackAimInterpolationSpeed = Speed;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackAimOffset(FVector &AimOffset)
+{
+    SecondaryTrackAimOffset = AimOffset;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackAimOffset(FVector &AimOffset)
+{
+    PrimaryTrackAimOffset = AimOffset;
 }
 
 void UExtendedCameraComponent::KeepInFrameLineOfSight_Implementation(AActor *Owner, FMinimalViewInfo &DesiredView)
@@ -699,6 +804,15 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo &
     SmoothReturn(ComponentOwner, DesiredView, DeltaTime);
 }
 
+void UExtendedCameraComponent::BeginPlay()
+{
+    Super::BeginPlay();
+
+    // Set up our temporary variables here
+    PrimaryTrackPastFrameLookAt = PrimaryTrackTransform.Rotator();
+    SecondaryTrackPastFrameLookAt = SecondaryTrackTransform.Rotator();
+}
+
 void UExtendedCameraComponent::SetCameraPrimaryTrack(FVector &&InLocation, FRotator &&InRotation, float InFOV)
 {
     PrimaryTrackTransform.SetLocation(MoveTemp(InLocation));
@@ -744,3 +858,106 @@ void UExtendedCameraComponent::SetCameraSecondaryLocation(FVector &&InLocation)
 {
     SecondaryTrackTransform.SetLocation(MoveTemp(InLocation));
 }
+
+bool UExtendedCameraComponent::SetPrimaryLocatorBoneName(FName TrackedBoneName)
+{
+    PrimaryLocatorBoneName = TrackedBoneName;
+
+    if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonLocator ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton)
+    {
+        return BoneCheck(PrimaryTrackLocator, TrackedBoneName);
+    }
+
+    return false;
+}
+
+bool UExtendedCameraComponent::SetSecondaryLocatorBoneName(FName TrackedBoneName)
+{
+    SecondaryLocatorBoneName = TrackedBoneName;
+
+    if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonLocator ||
+        SecondTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton)
+    {
+        return BoneCheck(SecondaryTrackLocator, TrackedBoneName);
+    }
+
+    return false;
+}
+
+bool UExtendedCameraComponent::SetPrimaryLocatorAimName(FName TrackedAimName)
+{
+    PrimaryAimBoneName = TrackedAimName;
+
+    if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonAim ||
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton
+        )
+    {
+        return BoneCheck(PrimaryTrackAim, TrackedAimName);
+    }
+
+    return false;
+}
+
+bool UExtendedCameraComponent::SetSecondaryLocatorAimName(FName TrackedAimName)
+{
+    SecondaryAimBoneName = TrackedAimName;
+
+    if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonAim ||
+        SecondTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton)
+    {
+        return BoneCheck(SecondaryTrackAim, TrackedAimName);
+    }
+
+    return false;
+}
+
+void UExtendedCameraComponent::SetFOVCheckOffsetInRadians(float FOVOffset)
+{
+    FOVCheckOffsetInRadians = FOVOffset;
+}
+
+void UExtendedCameraComponent::SetUseDollyZoom(bool NewState)
+{
+    UseDollyZoomForLOS = NewState;
+}
+
+void UExtendedCameraComponent::SetSmoothReturn(bool NewState)
+{
+    SmoothReturnOnLineOfSight = NewState;
+}
+
+void UExtendedCameraComponent::SetSmoothReturnSpeed(float NewReturnSpeed)
+{
+    SmoothReturnSpeed = NewReturnSpeed;
+}
+
+void UExtendedCameraComponent::SetSmoothReturnDeadzone(float NewDeadzone)
+{
+    ReturnFinishedThresholdSquared = NewDeadzone * NewDeadzone;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackMode(EExtendedCameraDriverMode NewMode)
+{
+    FirstTrackCameraDriverMode = NewMode;
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackMode(EExtendedCameraDriverMode NewMode)
+{
+    SecondTrackCameraDriverMode = NewMode;
+}
+
+void UExtendedCameraComponent::SetPrimaryTrackAimDebug(bool Enabled)
+{
+#if ENABLE_DRAW_DEBUG
+    PrimaryTrackAimDebug = Enabled;
+#endif // ENABLE_DRAW_DEBUG
+}
+
+void UExtendedCameraComponent::SetSecondaryTrackAimDebug(bool Enabled)
+{
+#if ENABLE_DRAW_DEBUG
+    SecondaryTrackAimDebug = Enabled;
+#endif // ENABLE_DRAW_DEBUG
+}
+
