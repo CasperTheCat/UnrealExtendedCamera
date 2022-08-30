@@ -145,10 +145,10 @@ protected:
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     float PrimaryTrackAimInterpolationSpeed;
 
-#if ENABLE_DRAW_DEBUG
+//#if ENABLE_DRAW_DEBUG
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     bool PrimaryTrackAimDebug;
-#endif // ENABLE_DRAW_DEBUG
+//#endif // ENABLE_DRAW_DEBUG
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FName PrimaryLocatorBoneName;
@@ -171,10 +171,10 @@ protected:
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     float SecondaryTrackAimInterpolationSpeed;
 
-#if ENABLE_DRAW_DEBUG
+//#if ENABLE_DRAW_DEBUG
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     bool SecondaryTrackAimDebug;
-#endif // ENABLE_DRAW_DEBUG
+//#endif // ENABLE_DRAW_DEBUG
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryLocatorBoneName;
