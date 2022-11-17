@@ -4,6 +4,7 @@
 #include "CollisionQueryParams.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
+#include "Components/SkeletalMeshComponent.h"
 
 #if ENABLE_DRAW_DEBUG
 #include "DrawDebugHelpers.h"

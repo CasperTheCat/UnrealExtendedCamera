@@ -409,34 +409,34 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
     virtual void SetSecondaryTrackDollyZoomLiveUpdate(bool Enabled);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track")
     virtual void SetPrimaryTrackedCamera(ACameraActor *TrackedCamera);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track")
     virtual void SetSecondaryTrackedCamera(ACameraActor *TrackedCamera);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Locator")
     virtual void SetPrimaryTrackLocator(AActor *TrackedActor);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Locator")
     virtual void SetSecondaryTrackLocator(AActor *TrackedActor);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Locator")
     virtual void SetPrimaryTrackAim(AActor *TrackedActor);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Locator")
     virtual void SetSecondaryTrackAim(AActor *TrackedActor);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Locator")
     virtual void SetPrimaryTrackAimOffset(UPARAM(ref) FVector &AimOffset);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Locator")
     virtual void SetSecondaryTrackAimOffset(UPARAM(ref) FVector &AimOffset);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|First Track|Locator")
     virtual void SetPrimaryTrackAimInterpolationSpeed(float Speed);
 
-    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Dolly Zoom")
+    UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Locator")
     virtual void SetSecondaryTrackAimInterpolationSpeed(float Speed);
 
 
