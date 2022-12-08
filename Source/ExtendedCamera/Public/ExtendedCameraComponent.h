@@ -11,6 +11,7 @@
 // Fix for v4.27
 #ifndef ENABLE_DRAW_DEBUG
 #define ENABLE_DRAW_DEBUG WITH_EDITORONLY_DATA
+#define EXTENDEDCAMERAWORKAROUND
 #endif
 
 DECLARE_STATS_GROUP(TEXT("Acinonyx Extended Camera"), STATGROUP_ACIExtCam, STATCAT_Advanced);
@@ -554,3 +555,7 @@ public:
     // Set Secondary Track
     virtual void SetCameraSecondaryLocation(FVector &&InLocation);
 };
+
+#ifdef EXTENDEDCAMERAWORKAROUND
+#undef ENABLE_DRAW_DEBUG
+#endif
