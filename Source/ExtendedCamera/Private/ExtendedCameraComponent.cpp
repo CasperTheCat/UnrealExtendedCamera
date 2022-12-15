@@ -6,9 +6,9 @@
 #include "GameFramework/Character.h"
 #include "Components/SkeletalMeshComponent.h"
 
-#if ENABLE_DRAW_DEBUG
+#if EXTENDEDCAMERA_DEBUG_DRAW
 #include "DrawDebugHelpers.h"
-#endif // ENABLE_DRAW_DEBUG
+#endif // EXTENDEDCAMERA_DEBUG_DRAW
 
 DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
 
@@ -295,13 +295,13 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
                 PrimaryTrackPastFrameLookAt = FinalRotation;
                 SetCameraPrimaryRotation(FinalRotation);
 
-#if ENABLE_DRAW_DEBUG
+#if EXTENDEDCAMERA_DEBUG_DRAW
                 if (PrimaryTrackAimDebug)
                 {
                     DrawDebugSolidBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor(200, 200, 32, 128));
                     DrawDebugBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor::Black);
                 }
-#endif // ENABLE_DRAW_DEBUG
+#endif // EXTENDEDCAMERA_DEBUG_DRAW
             }
         }
     }
@@ -363,13 +363,13 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
                 SecondaryTrackPastFrameLookAt = FinalRotation;
                 SetCameraSecondaryRotation(FinalRotation);
 
-#if ENABLE_DRAW_DEBUG
+#if EXTENDEDCAMERA_DEBUG_DRAW
                 if (SecondaryTrackAimDebug)
                 {
                     DrawDebugSolidBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor(250, 150, 32, 128));
                     DrawDebugBox(GetWorld(), BaseAimLocation, FVector(12.f), FColor::Black);
                 }
-#endif // ENABLE_DRAW_DEBUG
+#endif // EXTENDEDCAMERA_DEBUG_DRAW
             }
         }
     }
@@ -601,7 +601,7 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor *Owne
 
         World->LineTraceSingleByChannel(LOSCheck, Aim, DesiredView.Location, this->GetCollisionObjectType(), params);
 
-#if ENABLE_DRAW_DEBUG
+#if EXTENDEDCAMERA_DEBUG_DRAW
         if (PrimaryTrackAimDebug || SecondaryTrackAimDebug)
         {
             DrawDebugLine(GetWorld(), Aim, DesiredView.Location, FColor::Red);
@@ -609,7 +609,7 @@ void UExtendedCameraComponent::CommonKeepLineOfSight_Implementation(AActor *Owne
             DrawDebugSolidBox(GetWorld(), Aim, FVector(12.f), FColor(200, 20, 132, 128));
             DrawDebugBox(GetWorld(), Aim, FVector(12.f), FColor::Black);
         }
-#endif // ENABLE_DRAW_DEBUG
+#endif // EXTENDEDCAMERA_DEBUG_DRAW
 
         if (LOSCheck.bBlockingHit)
         {
@@ -949,15 +949,15 @@ void UExtendedCameraComponent::SetSecondaryTrackMode(EExtendedCameraDriverMode N
 
 void UExtendedCameraComponent::SetPrimaryTrackAimDebug(bool Enabled)
 {
-#if ENABLE_DRAW_DEBUG
+#if EXTENDEDCAMERA_DEBUG_DRAW
     PrimaryTrackAimDebug = Enabled;
-#endif // ENABLE_DRAW_DEBUG
+#endif // EXTENDEDCAMERA_DEBUG_DRAW
 }
 
 void UExtendedCameraComponent::SetSecondaryTrackAimDebug(bool Enabled)
 {
-#if ENABLE_DRAW_DEBUG
+#if EXTENDEDCAMERA_DEBUG_DRAW
     SecondaryTrackAimDebug = Enabled;
-#endif // ENABLE_DRAW_DEBUG
+#endif // EXTENDEDCAMERA_DEBUG_DRAW
 }
 
