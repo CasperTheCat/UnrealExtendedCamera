@@ -9,9 +9,8 @@
 #include "ExtendedCameraComponent.generated.h"
 
 // Fix for v4.27
-#ifndef ENABLE_DRAW_DEBUG
-#define ENABLE_DRAW_DEBUG WITH_EDITORONLY_DATA
-#define EXTENDEDCAMERAWORKAROUND
+#ifndef EXTENDEDCAMERA_DEBUG_DRAW
+#define EXTENDEDCAMERA_DEBUG_DRAW (!(UE_BUILD_SHIPPING || UE_BUILD_TEST) || WITH_EDITOR)
 #endif
 
 DECLARE_STATS_GROUP(TEXT("Acinonyx Extended Camera"), STATGROUP_ACIExtCam, STATCAT_Advanced);
@@ -146,10 +145,10 @@ protected:
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     float PrimaryTrackAimInterpolationSpeed;
 
-//#if ENABLE_DRAW_DEBUG
+//#if EXTENDEDCAMERA_DEBUG_DRAW
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     bool PrimaryTrackAimDebug;
-//#endif // ENABLE_DRAW_DEBUG
+//#endif // EXTENDEDCAMERA_DEBUG_DRAW
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FName PrimaryLocatorBoneName;
@@ -172,10 +171,10 @@ protected:
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     float SecondaryTrackAimInterpolationSpeed;
 
-//#if ENABLE_DRAW_DEBUG
+//#if EXTENDEDCAMERA_DEBUG_DRAW
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     bool SecondaryTrackAimDebug;
-//#endif // ENABLE_DRAW_DEBUG
+//#endif // EXTENDEDCAMERA_DEBUG_DRAW
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryLocatorBoneName;
@@ -555,7 +554,3 @@ public:
     // Set Secondary Track
     virtual void SetCameraSecondaryLocation(FVector &&InLocation);
 };
-
-#ifdef EXTENDEDCAMERAWORKAROUND
-#undef ENABLE_DRAW_DEBUG
-#endif
