@@ -379,9 +379,9 @@ UExtendedCameraComponent::UExtendedCameraComponent()
     : SmoothReturnOnLineOfSight(false)
     , SmoothReturnSpeed(1)
     , WasLineOfSightBlockedRecently(false)
+    , ReturnFinishedThresholdSquared(27.f)
     , FirstTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
     , SecondTrackCameraDriverMode(EExtendedCameraDriverMode::Compat)
-    , ReturnFinishedThresholdSquared(27.f)
 {
 }
 
