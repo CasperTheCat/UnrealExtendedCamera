@@ -182,10 +182,6 @@ protected:
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryAimBoneName;
 
-    // Write Tracked Camera to Secondary Track, otherwise Primary
-    // UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera")
-    // bool WriteTrackedToSecondary;
-
     /**
      * You can either null the TrackedCamera or -- and this is easier in sequencer -- you can disable it here
      */
