@@ -124,17 +124,17 @@ protected:
 
     // Target Camera
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Reference Camera")
-    ACameraActor *PrimaryTrackedCamera;
+    TObjectPtr<ACameraActor> PrimaryTrackedCamera;
 
     // Target Camera
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Reference Camera")
-    ACameraActor *SecondaryTrackedCamera;
+    TObjectPtr<ACameraActor> SecondaryTrackedCamera;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
-    AActor *PrimaryTrackLocator;
+    TObjectPtr<AActor> PrimaryTrackLocator;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
-    AActor *PrimaryTrackAim;
+    TObjectPtr<AActor> PrimaryTrackAim;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FVector PrimaryTrackAimOffset;
@@ -157,10 +157,10 @@ protected:
     FName PrimaryAimBoneName;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
-    AActor *SecondaryTrackLocator;
+    TObjectPtr<AActor> SecondaryTrackLocator;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
-    AActor *SecondaryTrackAim;
+    TObjectPtr<AActor> SecondaryTrackAim;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FVector SecondaryTrackAimOffset;
