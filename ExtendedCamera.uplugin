@@ -10,7 +10,7 @@
 	"DocsURL": "https://acinonyx.nz/documentation-extendedcamera/",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/aec134405fb24f25929b9f1b58bce00c",
 	"SupportURL": "",
-	"EngineVersion" : "5.1.0",
+	"EngineVersion" : "5.2.0",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,

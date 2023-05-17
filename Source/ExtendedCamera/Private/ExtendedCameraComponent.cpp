@@ -40,6 +40,8 @@ bool BoneCheck(AActor* Actor, FName TrackedName)
 
 FVector UExtendedCameraComponent::GetAimLocation_Implementation(AActor *Owner)
 {
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetAimLocation"), STAT_ACIExtCam_GetAimLocation, STATGROUP_ACIExtCam);
+
     // Do we need return the aim point?
     // Or just the ComponentOwner's location?
     auto OAL = Owner->GetActorLocation();
@@ -84,6 +86,8 @@ FVector UExtendedCameraComponent::GetActorTrackLocation_Implementation(AActor *O
                                                                        EExtendedCameraDriverMode CameraMode,
                                                                        FName LocatorBoneName)
 {
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetActorTrackLocation"), STAT_ACIExtCam_GetActorTrackLocation, STATGROUP_ACIExtCam);
+
     // We need non-skeletal locator
     if (EExtendedCameraDriverMode::LocAndAim == CameraMode || EExtendedCameraDriverMode::SkeletonAim == CameraMode)
     {
@@ -124,6 +128,8 @@ FTransform UExtendedCameraComponent::GetActorAimLocation_Implementation(AActor *
                                                                         EExtendedCameraDriverMode CameraMode,
                                                                         FName LocatorBoneName)
 {
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetActorAimLocation"), STAT_ACIExtCam_GetActorAimLocation, STATGROUP_ACIExtCam);
+
     // We need non-skeletal aim
     if (EExtendedCameraDriverMode::LocAndAim == CameraMode || EExtendedCameraDriverMode::SkeletonLocator == CameraMode)
     {
@@ -192,6 +198,8 @@ void UExtendedCameraComponent::SmoothReturn_Implementation(AActor *Owner, FMinim
 
 void UExtendedCameraComponent::LineOfCheckHandler_Implementation(AActor *Owner, FMinimalViewInfo &DesiredView)
 {
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("LineOfCheckHandler"), STAT_ACIExtCam_LineOfCheckHandler, STATGROUP_ACIExtCam);
+
     if (Owner)
     {
         auto ownerLocation = Owner->GetActorLocation();
@@ -237,6 +245,8 @@ void UExtendedCameraComponent::LineOfCheckHandler_Implementation(AActor *Owner, 
 void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMinimalViewInfo &DesiredView,
                                                               float DeltaTime)
 {
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("TrackingHandler"), STAT_ACIExtCam_TrackingHandler, STATGROUP_ACIExtCam);
+
     if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Compat)
     {
         // Old Version. Sets the same stuff to maintain backwards compatibility
