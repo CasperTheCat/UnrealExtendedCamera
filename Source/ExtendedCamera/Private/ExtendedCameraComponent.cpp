@@ -1,11 +1,11 @@
 // Copyright Acinonyx Ltd. 2022. All Rights Reserved.
 
 #include "ExtendedCameraComponent.h"
+
 #include "CollisionQueryParams.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
-#include "Components/SkeletalMeshComponent.h"
 
 #if EXTENDEDCAMERA_DEBUG_DRAW
 #include "DrawDebugHelpers.h"
@@ -13,8 +13,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogExtendedCamera, Warning, All);
 
-
-bool BoneCheck(AActor* Actor, FName TrackedName)
+bool BoneCheck(AActor *Actor, FName TrackedName)
 {
     // Ask for the bone
     if (IsValid(Actor))
@@ -36,7 +35,6 @@ bool BoneCheck(AActor* Actor, FName TrackedName)
 
     return false;
 }
-
 
 FVector UExtendedCameraComponent::GetAimLocation_Implementation(AActor *Owner)
 {
@@ -86,7 +84,8 @@ FVector UExtendedCameraComponent::GetActorTrackLocation_Implementation(AActor *O
                                                                        EExtendedCameraDriverMode CameraMode,
                                                                        FName LocatorBoneName)
 {
-    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetActorTrackLocation"), STAT_ACIExtCam_GetActorTrackLocation, STATGROUP_ACIExtCam);
+    DECLARE_SCOPE_CYCLE_COUNTER(TEXT("GetActorTrackLocation"), STAT_ACIExtCam_GetActorTrackLocation,
+                                STATGROUP_ACIExtCam);
 
     // We need non-skeletal locator
     if (EExtendedCameraDriverMode::LocAndAim == CameraMode || EExtendedCameraDriverMode::SkeletonAim == CameraMode)
@@ -901,8 +900,7 @@ bool UExtendedCameraComponent::SetPrimaryLocatorAimName(FName TrackedAimName)
     PrimaryAimBoneName = TrackedAimName;
 
     if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::SkeletonAim ||
-        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton
-        )
+        FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Skeleton)
     {
         return BoneCheck(PrimaryTrackAim, TrackedAimName);
     }
@@ -971,4 +969,3 @@ void UExtendedCameraComponent::SetSecondaryTrackAimDebug(bool Enabled)
     SecondaryTrackAimDebug = Enabled;
 #endif // EXTENDEDCAMERA_DEBUG_DRAW
 }
-
