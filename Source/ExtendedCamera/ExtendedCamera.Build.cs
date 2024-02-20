@@ -2,7 +2,7 @@
 
 using UnrealBuildTool;
 
-public class ExtendedCamera: ModuleRules
+public class ExtendedCamera : ModuleRules
 {
 	public ExtendedCamera(ReadOnlyTargetRules Target) : base(Target)
 	{
@@ -10,19 +10,21 @@ public class ExtendedCamera: ModuleRules
 		//bEnforceIWYU = true;
 
 		PublicIncludePaths.AddRange(
-			new string[] {
+			new string[]
+			{
 				// ... add public include paths required here ...
 			}
-			);
-				
-		
+		);
+
+
 		PrivateIncludePaths.AddRange(
-			new string[] {
+			new string[]
+			{
 				// ... add other private include paths required here ...
 			}
-			);
-			
-		
+		);
+
+
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -30,7 +32,7 @@ public class ExtendedCamera: ModuleRules
 
 				// ... add other public dependencies that you statically link with here ...
 			}
-			);
+		);
 
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
@@ -39,6 +41,6 @@ public class ExtendedCamera: ModuleRules
 				"Engine",
 				// ... add private dependencies that you statically link with here ...	
 			}
-			);
+		);
 	}
 }
