@@ -1,10 +1,11 @@
-// Copyright Acinonyx Ltd. 2022. All Rights Reserved.
+// Copyright Acinonyx Ltd. 2024. All Rights Reserved.
 
 #pragma once
 
+#include "CoreMinimal.h"
+#include "ExtendedCameraTypes.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
-#include "CoreMinimal.h"
 
 #include "ExtendedCameraComponent.generated.h"
 
@@ -31,12 +32,25 @@ enum EExtendedCameraDriverMode
     ReferenceCameraDriven UMETA(DisplayName = "Reference Camera"),
     Compat UMETA(DisplayName = "Compatibility Mode"),
     DataDriven UMETA(DisplayName = "Direct Data Driven"),
-    LocAndAim UMETA(DisplayName = "Location and Aim"),
-    Skeleton UMETA(DisplayName = "Animation Locator and Aim"),
-    SkeletonLocator UMETA(DisplayName = "Animation Locator and Object Aim"),
-    SkeletonAim UMETA(DisplayName = "Object Locator and Animation Aim"),
+    DataAndAim UMETA(DisplayName = "Data Driven Location with Aim"),
+    LocationAndData UMETA(DisplayName = "Location with Data Driven Aim"),
+    LocAndAim UMETA(DisplayName = "Object Location and Aim"),
+    Skeleton UMETA(DisplayName = "Skeletal Locator and Aim"),
+    SkeletonLocator UMETA(DisplayName = "Skeletal Locator and Object Aim"),
+    SkeletonAim UMETA(DisplayName = "Object Locator and Skeletal Aim"),
+    DataAndSkeletalAim UMETA(DisplayName = "Data Driven Location with Skeletal Aim"),
+    SkeletalLocationAndData UMETA(DisplayName = "Skeletal Location with Data Driven Aim"),
 
     TOTAL_CAMERA_DRIVER_MODES UMETA(Hidden)
+};
+
+UENUM(BlueprintType)
+enum EExtendedCameraOrbitMode
+{
+    LinearInterpolate UMETA(DisplayName = "Linear Interpolate"),
+    SphericalInterpolate UMETA(DisplayName = "Spherical Interpolate"),
+
+    TOTAL_CAMERA_ORBIT_MODES UMETA(Hidden)
 };
 
 UCLASS(config = Game, BlueprintType, Blueprintable, ClassGroup = Camera, meta = (BlueprintSpawnableComponent))
@@ -123,11 +137,13 @@ protected:
     //
 
     // Target Camera
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Reference Camera")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite,
+        Category = "Extended Camera|First Track|Reference Camera")
     TObjectPtr<ACameraActor> PrimaryTrackedCamera;
 
     // Target Camera
-    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Reference Camera")
+    UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite,
+        Category = "Extended Camera|Second Track|Reference Camera")
     TObjectPtr<ACameraActor> SecondaryTrackedCamera;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
@@ -140,15 +156,15 @@ protected:
     FVector PrimaryTrackAimOffset;
 
     UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|First Track|Locator")
-    FRotator PrimaryTrackPastFrameLookAt;
+    FQuat PrimaryTrackPastFrameLookAt;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     float PrimaryTrackAimInterpolationSpeed;
 
-//#if EXTENDEDCAMERA_DEBUG_DRAW
+    //#if EXTENDEDCAMERA_DEBUG_DRAW
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     bool PrimaryTrackAimDebug;
-//#endif // EXTENDEDCAMERA_DEBUG_DRAW
+    //#endif // EXTENDEDCAMERA_DEBUG_DRAW
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track|Locator")
     FName PrimaryLocatorBoneName;
@@ -166,15 +182,15 @@ protected:
     FVector SecondaryTrackAimOffset;
 
     UPROPERTY(SaveGame, BlueprintReadOnly, Category = "Extended Camera|Second Track|Locator")
-    FRotator SecondaryTrackPastFrameLookAt;
+    FQuat SecondaryTrackPastFrameLookAt;
 
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     float SecondaryTrackAimInterpolationSpeed;
 
-//#if EXTENDEDCAMERA_DEBUG_DRAW
+    //#if EXTENDEDCAMERA_DEBUG_DRAW
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     bool SecondaryTrackAimDebug;
-//#endif // EXTENDEDCAMERA_DEBUG_DRAW
+    //#endif // EXTENDEDCAMERA_DEBUG_DRAW
 
     UPROPERTY(Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track|Locator")
     FName SecondaryLocatorBoneName;
@@ -200,7 +216,7 @@ protected:
      * Zero disables FOV blending
      */
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera",
-              meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.0", ClampMax = "360.0", Units = deg))
+        meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.0", ClampMax = "360.0", Units = deg))
     float PrimaryTrackFOV = 0.f;
 
     // Secondary Track - Set by users
@@ -212,7 +228,7 @@ protected:
      * Zero disables FOV blending
      */
     UPROPERTY(SaveGame, Interp, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera",
-              meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.0", ClampMax = "360.0", Units = deg))
+        meta = (UIMin = "0.0", UIMax = "175", ClampMin = "0.0", ClampMax = "360.0", Units = deg))
     float SecondaryTrackFOV = 0.f;
 
     // Blend Amount for the first channel
@@ -274,6 +290,19 @@ protected:
     TEnumAsByte<EExtendedCameraDriverMode> SecondTrackCameraDriverMode;
 
 protected:
+    UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|First Track")
+    TEnumAsByte<EExtendedCameraOrbitMode> FirstTrackOrbitalMode;
+
+    UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Extended Camera|Second Track")
+    TEnumAsByte<EExtendedCameraOrbitMode> SecondTrackOrbitalMode;
+
+    UFUNCTION()
+    FExtendedCameraViewInfo BlendTrackViews(const FMinimalViewInfo &FromView, const FExtendedCameraViewInfo &ToView,
+                                            const float Alpha,
+                                            const TEnumAsByte<EExtendedCameraOrbitMode> RequestedOrbitMode);
+    //virtual FExtendedCameraViewInfo BlendTrackViews_Implementation(const FMinimalViewInfo& FromView, const FExtendedCameraViewInfo& ToView, const float Alpha, const TEnumAsByte<EExtendedCameraOrbitMode> RequestedOrbitMode);
+
+protected:
     UFUNCTION(BlueprintNativeEvent)
     FVector GetAimLocation(AActor *Owner);
     virtual FVector GetAimLocation_Implementation(AActor *Owner);
@@ -298,15 +327,17 @@ protected:
     void LineOfCheckHandler(AActor *Owner, FMinimalViewInfo &DesiredView);
     virtual void LineOfCheckHandler_Implementation(AActor *Owner, FMinimalViewInfo &DesiredView);
 
+
+    virtual void Tracking_CameraHandler(FTransform &TrackTransform, float &TrackFOV,
+                                        TObjectPtr<ACameraActor> CameraActor);
+    virtual void Tracking_LocatorAimHandler(FTransform &TrackTransform, const EExtendedCameraDriverMode DriverMode,
+                                            const FExtendedCameraLocatorAimInfo &Locator,
+                                            const FExtendedCameraLocatorAimInfo &Aim);
+
     // Function to track
     UFUNCTION(BlueprintNativeEvent)
     void TrackingHandler(AActor *Owner, FMinimalViewInfo &DesiredView, float DeltaTime);
     virtual void TrackingHandler_Implementation(AActor *Owner, FMinimalViewInfo &DesiredView, float DeltaTime);
-
-
-
-
-
 
 public:
     UExtendedCameraComponent();
@@ -498,8 +529,6 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Extended Camera|Second Track|Debug")
     virtual void SetSecondaryTrackAimDebug(bool Enabled);
-
-
 
 
     UFUNCTION(BlueprintNativeEvent)

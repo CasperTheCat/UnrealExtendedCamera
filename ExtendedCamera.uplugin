@@ -1,29 +1,29 @@
 {
-	"FileVersion": 3,
-	"Version": 21301,
-	"VersionName": "2.13.1.52",
-	"FriendlyName": "Extended Camera",
-	"Description": "Extends Camera to allow for programmatically driven blends",
-	"Category": "Camera",
-	"CreatedBy": "Acinonyx Ltd.",
-	"CreatedByURL": "https://acinonyx.nz/",
-	"DocsURL": "https://acinonyx.nz/documentation-extendedcamera/",
-	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/aec134405fb24f25929b9f1b58bce00c",
-	"SupportURL": "",
-	"EngineVersion" : "5.2.0",
-	"CanContainContent": true,
-	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
-	"Installed": false,
-	"Modules": [
-		{
-			"Name": "ExtendedCamera",
-			"Type": "Runtime",
-			"LoadingPhase": "PreDefault",
-			"PlatformAllowList": [
-				"Win64",
-				"Linux"
-			]
-		}
-	]
+    "FileVersion": 3,
+    "Version": 21500,
+    "VersionName": "2.15.0.53",
+    "FriendlyName": "Extended Camera",
+    "Description": "Extends Camera to allow for programmatically driven blends",
+    "Category": "Camera",
+    "CreatedBy": "Acinonyx Ltd.",
+    "CreatedByURL": "https://acinonyx.nz/",
+    "DocsURL": "https://acinonyx.nz/documentation-extendedcamera/",
+    "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/aec134405fb24f25929b9f1b58bce00c",
+    "SupportURL": "",
+    "EngineVersion": "5.3.0",
+    "CanContainContent": true,
+    "IsBetaVersion": false,
+    "IsExperimentalVersion": false,
+    "Installed": false,
+    "Modules": [
+        {
+            "Name": "ExtendedCamera",
+            "Type": "Runtime",
+            "LoadingPhase": "PreDefault",
+            "PlatformAllowList": [
+                "Win64",
+                "Linux"
+            ]
+        }
+    ]
 }
