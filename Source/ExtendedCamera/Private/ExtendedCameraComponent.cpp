@@ -282,7 +282,7 @@ void UExtendedCameraComponent::Tracking_CameraHandler(FTransform &TrackTransform
     if (IsValid(CameraActor))
     {
         const auto CameraComp = CameraActor->GetCameraComponent();
-        if (CameraComp)
+        if (IsValid(CameraComp))
         {
             TrackTransform = CameraActor->GetTransform();
             TrackFOV = CameraComp->FieldOfView;
@@ -327,21 +327,24 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
                                                               float DeltaTime)
 {
     DECLARE_SCOPE_CYCLE_COUNTER(TEXT("TrackingHandler"), STAT_ACIExtCam_TrackingHandler, STATGROUP_ACIExtCam);
-
-    if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Compat && !IgnorePrimaryTrackedCamera)
+    
+    if (!FMath::IsNearlyZero(CameraPrimaryTrackBlendAlpha))
     {
-        // Old Version. Sets the same stuff to maintain backwards compatibility
-        // Write Tracked Values if we're using it
-        Tracking_CameraHandler(PrimaryTrackTransform, PrimaryTrackFOV, PrimaryTrackedCamera);
-    }
-    else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::DataDriven)
-    {
-        // Do Nothing? Data is being directly driven
-    }
-    else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::ReferenceCameraDriven)
-    {
-        // New way to specify that we wish to track a camera directly
-        Tracking_CameraHandler(PrimaryTrackTransform, PrimaryTrackFOV, PrimaryTrackedCamera);
+        if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::Compat && !IgnorePrimaryTrackedCamera)
+        {
+            // Old Version. Sets the same stuff to maintain backwards compatibility
+            // Write Tracked Values if we're using it
+            Tracking_CameraHandler(PrimaryTrackTransform, PrimaryTrackFOV, PrimaryTrackedCamera);
+        }
+        else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::DataDriven)
+        {
+            // Do Nothing? Data is being directly driven
+        }
+        else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::ReferenceCameraDriven)
+        {
+            // New way to specify that we wish to track a camera directly
+            Tracking_CameraHandler(PrimaryTrackTransform, PrimaryTrackFOV, PrimaryTrackedCamera);
+        }
     }
     else if (FirstTrackCameraDriverMode == EExtendedCameraDriverMode::DataAndAim ||
              FirstTrackCameraDriverMode == EExtendedCameraDriverMode::LocationAndData ||
@@ -377,18 +380,21 @@ void UExtendedCameraComponent::TrackingHandler_Implementation(AActor *Owner, FMi
     }
 
     // Second
-    if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::Compat && !IgnoreSecondTrackedCamera)
+    if (!FMath::IsNearlyZero(CameraSecondaryTrackBlendAlpha))
     {
-        Tracking_CameraHandler(SecondaryTrackTransform, SecondaryTrackFOV, SecondaryTrackedCamera);
-    }
-    else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::DataDriven)
-    {
-        // Do Nothing? Data is being directly driven
-    }
-    else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::ReferenceCameraDriven)
-    {
-        // Write Tracked Values if we're using it
-        Tracking_CameraHandler(SecondaryTrackTransform, SecondaryTrackFOV, SecondaryTrackedCamera);
+        if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::Compat && !IgnoreSecondTrackedCamera)
+        {
+            Tracking_CameraHandler(SecondaryTrackTransform, SecondaryTrackFOV, SecondaryTrackedCamera);
+        }
+        else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::DataDriven)
+        {
+            // Do Nothing? Data is being directly driven
+        }
+        else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::ReferenceCameraDriven)
+        {
+            // Write Tracked Values if we're using it
+            Tracking_CameraHandler(SecondaryTrackTransform, SecondaryTrackFOV, SecondaryTrackedCamera);
+        }
     }
     else if (SecondTrackCameraDriverMode == EExtendedCameraDriverMode::DataAndAim ||
              SecondTrackCameraDriverMode == EExtendedCameraDriverMode::LocationAndData ||
@@ -800,7 +806,7 @@ void UExtendedCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo &
             }
 
             OffsetTrackFOV =
-                DollyZoom(FirstTrackDollyZoomReferenceDistance, SecondaryTrackFOV,
+                DollyZoom(FirstTrackDollyZoomReferenceDistance, PrimaryTrackFOV,
                           FVector::Dist(ComponentOwner->GetActorLocation(), PrimaryTrackTransform.GetLocation()));
         }
 
